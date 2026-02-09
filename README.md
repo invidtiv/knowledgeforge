@@ -41,7 +41,7 @@ KnowledgeForge ingests your Obsidian vault, project codebases, and agent-generat
 ### Installation
 
 ```bash
-git clone https://github.com/tiaz-fr/knowledgeforge.git
+git clone https://github.com/invidtiv/knowledgeforge.git
 cd knowledgeforge
 pip install -e .
 ```
