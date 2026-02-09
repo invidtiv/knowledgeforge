@@ -1,0 +1,41 @@
+# KnowledgeForge Configuration
+data_dir: ~/.local/share/knowledgeforge
+
+# Obsidian vault
+obsidian_vault_path: ~/Documents/ObsidianVault
+obsidian_extensions: [".md"]
+
+# Code projects to index
+project_paths: []
+
+# Embedding
+embedding_model: nomic-ai/nomic-embed-text-v1.5
+embedding_device: cpu
+
+# Chunking
+max_chunk_size: 1000
+chunk_overlap: 100
+
+# Servers
+rest_host: 127.0.0.1
+rest_port: 8742
+
+# Watcher
+watch_enabled: true
+watch_debounce_seconds: 2.0
+
+# Discovery
+obsidian_discoveries_folder: KnowledgeForge Discoveries
+auto_promote_confirmed: true
+
+# Ignore patterns
+ignore_patterns:
+  - node_modules
+  - .git
+  - __pycache__
+  - .obsidian
+  - venv
+  - .venv
+  - dist
+  - build
+  - .next

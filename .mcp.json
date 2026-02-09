@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "knowledgeforge": {
+            "command": "python",
+            "args": ["-m", "knowledgeforge.interfaces.mcp_server"],
+            "env": {
+                "KNOWLEDGEFORGE_CONFIG": "~/.config/knowledgeforge/config.yaml"
+            }
+        }
+    }
+}

@@ -1,0 +1,277 @@
+"""
+Configuration module for KnowledgeForge.
+
+Handles configuration loading from YAML files and environment variables.
+Uses pydantic-settings for validation and type safety.
+"""
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, model_validator
+from pathlib import Path
+from typing import Optional, Any
+import os
+import yaml
+
+
+class ProjectPath(BaseSettings):
+    """Configuration for a single project path."""
+    path: str
+    name: str
+
+
+class KnowledgeForgeConfig(BaseSettings):
+    """
+    Main configuration class for KnowledgeForge.
+
+    Supports loading from:
+    1. YAML configuration file
+    2. Environment variables (KNOWLEDGEFORGE_ prefix)
+
+    Environment variables override YAML values.
+    """
+
+    model_config = SettingsConfigDict(
+        env_prefix="KNOWLEDGEFORGE_",
+        env_nested_delimiter="__",
+        case_sensitive=False
+    )
+
+    # Paths
+    data_dir: str = "~/.local/share/knowledgeforge"
+    obsidian_vault_path: str = ""
+    project_paths: list[dict] = Field(default_factory=list)  # list of {"path": str, "name": str}
+
+    # Embedding
+    embedding_model: str = "nomic-ai/nomic-embed-text-v1.5"
+    embedding_device: str = "cpu"
+
+    # ChromaDB
+    chroma_persist_dir: str = ""  # defaults to {data_dir}/chromadb
+
+    # Collections
+    docs_collection: str = "documents"
+    code_collection: str = "codebase"
+    discoveries_collection: str = "discoveries"
+
+    # Chunking
+    max_chunk_size: int = 1000
+    chunk_overlap: int = 100
+
+    # Server
+    rest_host: str = "127.0.0.1"
+    rest_port: int = 8742
+    mcp_transport: str = "stdio"
+
+    # Watcher
+    watch_enabled: bool = True
+    watch_debounce_seconds: float = 2.0
+
+    # Discovery
+    obsidian_discoveries_folder: str = "KnowledgeForge Discoveries"
+    auto_promote_confirmed: bool = True
+
+    # File patterns
+    obsidian_extensions: list[str] = Field(default_factory=lambda: [".md"])
+    code_extensions: list[str] = Field(default_factory=lambda: [
+        ".py", ".js", ".ts", ".jsx", ".tsx", ".rs", ".go",
+        ".c", ".cpp", ".h", ".hpp", ".sh", ".bash",
+        ".yaml", ".yml", ".toml", ".json", ".sql"
+    ])
+    ignore_patterns: list[str] = Field(default_factory=lambda: [
+        "node_modules", ".git", "__pycache__", ".obsidian",
+        "venv", ".venv", "dist", "build", ".next"
+    ])
+
+    @model_validator(mode="after")
+    def expand_paths(self) -> "KnowledgeForgeConfig":
+        """
+        Expand ~ to home directory in all path fields.
+        Also sets chroma_persist_dir default if not explicitly set.
+        """
+        # Expand home directory in path fields
+        if self.data_dir:
+            self.data_dir = os.path.expanduser(self.data_dir)
+
+        if self.obsidian_vault_path:
+            self.obsidian_vault_path = os.path.expanduser(self.obsidian_vault_path)
+
+        # Expand paths in project_paths list
+        for project in self.project_paths:
+            if "path" in project and project["path"]:
+                project["path"] = os.path.expanduser(project["path"])
+
+        # Set chroma_persist_dir default if not explicitly set
+        if not self.chroma_persist_dir:
+            self.chroma_persist_dir = os.path.join(self.data_dir, "chromadb")
+        else:
+            self.chroma_persist_dir = os.path.expanduser(self.chroma_persist_dir)
+
+        return self
+
+    @model_validator(mode="after")
+    def ensure_directories_exist(self) -> "KnowledgeForgeConfig":
+        """
+        Ensure critical directories exist.
+        Creates data_dir and chroma_persist_dir if they don't exist.
+        """
+        # Create data directory
+        if self.data_dir:
+            data_path = Path(self.data_dir)
+            data_path.mkdir(parents=True, exist_ok=True)
+
+        # Create chroma persist directory
+        if self.chroma_persist_dir:
+            chroma_path = Path(self.chroma_persist_dir)
+            chroma_path.mkdir(parents=True, exist_ok=True)
+
+        return self
+
+    @classmethod
+    def load_config(cls, config_path: Optional[str] = None) -> "KnowledgeForgeConfig":
+        """
+        Load configuration from YAML file and environment variables.
+
+        Priority order:
+        1. Explicit config_path parameter
+        2. KNOWLEDGEFORGE_CONFIG environment variable
+        3. ./config.yaml (current directory)
+        4. ~/.config/knowledgeforge/config.yaml (user config directory)
+        5. Default values only
+
+        Environment variables always override YAML values.
+
+        Args:
+            config_path: Optional explicit path to config file
+
+        Returns:
+            KnowledgeForgeConfig instance with loaded configuration
+        """
+        yaml_config = {}
+
+        # Determine config file path
+        paths_to_check = []
+
+        if config_path:
+            paths_to_check.append(config_path)
+
+        # Check KNOWLEDGEFORGE_CONFIG env var
+        env_config_path = os.getenv("KNOWLEDGEFORGE_CONFIG")
+        if env_config_path:
+            paths_to_check.append(env_config_path)
+
+        # Default locations
+        paths_to_check.extend([
+            "./config.yaml",
+            os.path.expanduser("~/.config/knowledgeforge/config.yaml")
+        ])
+
+        # Try to load from first existing config file
+        config_file_used = None
+        for path in paths_to_check:
+            path_obj = Path(path).resolve()
+            if path_obj.exists() and path_obj.is_file():
+                try:
+                    with open(path_obj, "r", encoding="utf-8") as f:
+                        yaml_config = yaml.safe_load(f) or {}
+                    config_file_used = str(path_obj)
+                    break
+                except Exception as e:
+                    # If we can't read the file, continue to next option
+                    print(f"Warning: Could not read config file {path_obj}: {e}")
+                    continue
+
+        # Create config instance
+        # pydantic-settings will automatically read environment variables
+        # and they will override YAML values
+        config = cls(**yaml_config)
+
+        # Store which config file was used for debugging
+        if config_file_used:
+            # Store as a private attribute (not validated by pydantic)
+            object.__setattr__(config, "_config_file_path", config_file_used)
+
+        return config
+
+    def get_config_file_path(self) -> Optional[str]:
+        """
+        Get the path to the config file that was loaded, if any.
+
+        Returns:
+            Path to config file, or None if only defaults/env vars were used
+        """
+        return getattr(self, "_config_file_path", None)
+
+    def to_yaml(self, file_path: Optional[str] = None) -> str:
+        """
+        Export current configuration to YAML format.
+
+        Args:
+            file_path: Optional path to write YAML file to
+
+        Returns:
+            YAML string representation of configuration
+        """
+        # Convert to dict
+        config_dict = self.model_dump(mode="python")
+
+        # Generate YAML
+        yaml_str = yaml.safe_dump(
+            config_dict,
+            default_flow_style=False,
+            sort_keys=False,
+            allow_unicode=True
+        )
+
+        # Write to file if specified
+        if file_path:
+            file_path_obj = Path(file_path).expanduser()
+            file_path_obj.parent.mkdir(parents=True, exist_ok=True)
+            with open(file_path_obj, "w", encoding="utf-8") as f:
+                f.write(yaml_str)
+
+        return yaml_str
+
+
+# Global config instance
+_global_config: Optional[KnowledgeForgeConfig] = None
+
+
+def get_config() -> KnowledgeForgeConfig:
+    """
+    Get the global configuration instance.
+    Loads configuration on first access.
+
+    Returns:
+        Global KnowledgeForgeConfig instance
+    """
+    global _global_config
+    if _global_config is None:
+        _global_config = KnowledgeForgeConfig.load_config()
+    return _global_config
+
+
+def set_config(config: KnowledgeForgeConfig) -> None:
+    """
+    Set the global configuration instance.
+    Useful for testing or programmatic configuration.
+
+    Args:
+        config: KnowledgeForgeConfig instance to use globally
+    """
+    global _global_config
+    _global_config = config
+
+
+def reload_config(config_path: Optional[str] = None) -> KnowledgeForgeConfig:
+    """
+    Reload configuration from file system.
+
+    Args:
+        config_path: Optional explicit path to config file
+
+    Returns:
+        Newly loaded KnowledgeForgeConfig instance
+    """
+    global _global_config
+    _global_config = KnowledgeForgeConfig.load_config(config_path)
+    return _global_config
