@@ -55,10 +55,14 @@ vk begin <task_id>
 ```
 
 #### If no task exists and work should be tracked
-Create it, immediately add a task-description comment, and then begin it:
+Create it with a real structured description field, then begin it:
 ```bash
-TASK_ID=$(vk create "<clear task title>" --type code --priority high --project <project> --json | jq -r '.id')
-vk comment "$TASK_ID" "<full task description, scope, goals, constraints, and expected outcome>"
+TASK_ID=$(vk create "<clear task title>" \
+  --type code \
+  --priority high \
+  --project <project> \
+  --description "Objective:\n<what needs to be achieved>\n\nScope:\n<what is in and out of scope>\n\nConstraints:\n<important limits, risks, dependencies>\n\nExpected outputs:\n<artifacts or changes expected>\n\nAcceptance criteria:\n<how success is validated>\n\nDone criteria:\n<what must be true to close the task>" \
+  --json | jq -r '.id')
 vk begin "$TASK_ID"
 ```
 
@@ -146,12 +150,19 @@ knowledgeforge semantic promote-discovery <discovery_id> project_overview
 ## Correct usage rules for Veritas Kanban
 
 ### Workflow rules
-- Immediately after creating a task, add a Kanban comment containing the real task description, scope, goals, constraints, and expected outcome.
+- At task creation time, populate the real structured `description` field using `vk create --description`.
+- Put the full task structure into the description body, including:
+  - Objective
+  - Scope
+  - Constraints
+  - Expected outputs
+  - Acceptance criteria
+  - Done criteria
 - `vk begin <id>` when starting tracked work
 - `vk done <id> "summary"` when finishing tracked work
 - `vk block <id> "reason"` if blocked
 - `vk unblock <id>` when resuming
-- Use task comments for meaningful progress notes, not every tiny step
+- Use task comments for meaningful progress notes, blockers, and implementation notes — not as a substitute for the main task description field
 
 ### Good Kanban hygiene
 - Task titles should describe outcomes, not vague activity
@@ -166,8 +177,7 @@ Primary commands:
 ```bash
 vk list
 vk show <id>
-vk create "title" --type code --priority high --project <project>
-vk comment <id> "full task description"
+vk create "title" --type code --priority high --project <project> --description "structured task description"
 vk begin <id>
 vk comment <id> "note"
 vk block <id> "reason"
@@ -253,7 +263,6 @@ When you receive a new project task:
 ```bash
 vk list --status in-progress
 vk list --status todo
-vk comment <task_id> "full task description"
 vk begin <task_id>
 knowledgeforge semantic search "<project> overview" --type project_overview --project <project>
 knowledgeforge semantic audit
