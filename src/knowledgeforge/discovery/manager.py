@@ -246,9 +246,14 @@ class DiscoveryManager:
             raise RuntimeError(f"Discovery not found: {discovery_id}")
 
         # Step 2: Update confirmed fields
+        now = datetime.now(timezone.utc).isoformat()
         discovery.confirmed = True
-        discovery.confirmed_at = datetime.now(timezone.utc).isoformat()
-        discovery.updated_at = datetime.now(timezone.utc).isoformat()
+        discovery.confirmed_at = now
+        discovery.reviewed_at = now
+        discovery.trust_level = "T2"
+        discovery.status = "active"
+        discovery.confidence = max(discovery.confidence, 0.9)
+        discovery.updated_at = now
 
         # Step 3: Update in vector store
         # Need to find the ChromaDB ID

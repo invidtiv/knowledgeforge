@@ -47,15 +47,19 @@ class KnowledgeForgeConfig(BaseSettings):
 
     # ChromaDB
     chroma_persist_dir: str = ""  # defaults to {data_dir}/chromadb
+    keyword_index_path: str = ""  # defaults to {data_dir}/keyword_index.sqlite3
 
     # Collections
     docs_collection: str = "documents"
     code_collection: str = "codebase"
     discoveries_collection: str = "discoveries"
+    facts_collection: str = "facts"
+    runbooks_collection: str = "runbooks"
+    project_overviews_collection: str = "project_overviews"
 
     # Chunking
-    max_chunk_size: int = 1000
-    chunk_overlap: int = 100
+    max_chunk_size: int = 400
+    chunk_overlap: int = 80
 
     # Server
     rest_host: str = "127.0.0.1"
@@ -70,6 +74,18 @@ class KnowledgeForgeConfig(BaseSettings):
     obsidian_discoveries_folder: str = "KnowledgeForge Discoveries"
     auto_promote_confirmed: bool = True
 
+    # Conversations
+    conversations_collection: str = "conversations"
+    conversation_sources: list[str] = Field(default_factory=lambda: [
+        "~/.claude/projects",
+        "~/.config/superpowers/conversation-archive/_codex",
+        "~/.config/superpowers/conversation-archive/_gemini",
+    ])
+    conversation_archive_dir: str = "~/.config/superpowers/conversation-archive"
+    conversation_enrichment_dir: str = ""  # e.g. data/enriched_conversations
+    conversation_max_tool_result_chars: int = 500
+    conversation_sync_on_start: bool = True
+
     # File patterns
     obsidian_extensions: list[str] = Field(default_factory=lambda: [".md"])
     code_extensions: list[str] = Field(default_factory=lambda: [
@@ -79,7 +95,7 @@ class KnowledgeForgeConfig(BaseSettings):
     ])
     ignore_patterns: list[str] = Field(default_factory=lambda: [
         "node_modules", ".git", "__pycache__", ".obsidian",
-        "venv", ".venv", "dist", "build", ".next"
+        "venv", ".venv", "dist", "build", ".next", ".trash"
     ])
 
     @model_validator(mode="after")
@@ -100,11 +116,25 @@ class KnowledgeForgeConfig(BaseSettings):
             if "path" in project and project["path"]:
                 project["path"] = os.path.expanduser(project["path"])
 
+        # Expand conversation paths
+        self.conversation_sources = [os.path.expanduser(p) for p in self.conversation_sources]
+        if self.conversation_archive_dir:
+            self.conversation_archive_dir = os.path.expanduser(self.conversation_archive_dir)
+        if self.conversation_enrichment_dir:
+            self.conversation_enrichment_dir = os.path.expanduser(self.conversation_enrichment_dir)
+
         # Set chroma_persist_dir default if not explicitly set
         if not self.chroma_persist_dir:
             self.chroma_persist_dir = os.path.join(self.data_dir, "chromadb")
         else:
             self.chroma_persist_dir = os.path.expanduser(self.chroma_persist_dir)
+
+        if not self.keyword_index_path:
+            self.keyword_index_path = os.path.join(
+                self.data_dir, "keyword_index.sqlite3"
+            )
+        else:
+            self.keyword_index_path = os.path.expanduser(self.keyword_index_path)
 
         return self
 
@@ -123,6 +153,10 @@ class KnowledgeForgeConfig(BaseSettings):
         if self.chroma_persist_dir:
             chroma_path = Path(self.chroma_persist_dir)
             chroma_path.mkdir(parents=True, exist_ok=True)
+
+        if self.keyword_index_path:
+            keyword_parent = Path(self.keyword_index_path).parent
+            keyword_parent.mkdir(parents=True, exist_ok=True)
 
         return self
 
