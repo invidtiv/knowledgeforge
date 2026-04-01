@@ -637,7 +637,7 @@ def watch(
         # Test API connectivity
         import requests
         try:
-            response = requests.get(f"{api_url}/health", timeout=5)
+            response = requests.get(f"{api_url}/api/v1/health", timeout=5)
             if response.status_code == 200:
                 console.print("[green]✓ REST API connected[/green]")
             else:

@@ -340,6 +340,11 @@ async def _proxy_request(request: Request, path: str) -> Response:
     for h in ("transfer-encoding", "content-encoding", "content-length"):
         resp_headers.pop(h, None)
 
+    # Explicitly preserve MCP session header for Streamable HTTP clients
+    mcp_session_id = upstream_resp.headers.get("Mcp-Session-Id") or upstream_resp.headers.get("mcp-session-id")
+    if mcp_session_id:
+        resp_headers["Mcp-Session-Id"] = mcp_session_id
+
     return Response(
         content=upstream_resp.content,
         status_code=upstream_resp.status_code,
@@ -349,28 +354,46 @@ async def _proxy_request(request: Request, path: str) -> Response:
 
 
 async def _proxy_sse(method: str, url: str, headers: dict, body: bytes) -> StreamingResponse:
-    """Proxy an SSE (Server-Sent Events) connection with streaming."""
+    """Proxy an SSE (Server-Sent Events) connection with streaming and preserve MCP session headers."""
+    try:
+        upstream_resp = await _upstream_client.send(
+            _upstream_client.build_request(method=method, url=url, headers=headers, content=body),
+            stream=True,
+        )
+    except httpx.ConnectError:
+        return StreamingResponse(
+            iter([b"event: error\ndata: MCP server unavailable\n\n"]),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
+
+    response_headers = {
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+    }
+    mcp_session_id = upstream_resp.headers.get("Mcp-Session-Id") or upstream_resp.headers.get("mcp-session-id")
+    if mcp_session_id:
+        response_headers["Mcp-Session-Id"] = mcp_session_id
 
     async def _stream():
         try:
-            async with _upstream_client.stream(
-                method=method, url=url, headers=headers, content=body,
-            ) as resp:
-                async for chunk in resp.aiter_bytes():
-                    yield chunk
-        except httpx.ConnectError:
-            yield b"event: error\ndata: MCP server unavailable\n\n"
+            async for chunk in upstream_resp.aiter_bytes():
+                yield chunk
         except asyncio.CancelledError:
             pass
+        finally:
+            await upstream_resp.aclose()
 
     return StreamingResponse(
         _stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
+        status_code=upstream_resp.status_code,
+        media_type=upstream_resp.headers.get("content-type", "text/event-stream"),
+        headers=response_headers,
     )
 
 
