@@ -17,11 +17,13 @@ console = Console()
 index_app = typer.Typer(help="Index/reindex content")
 discoveries_app = typer.Typer(help="Manage discoveries")
 semantic_app = typer.Typer(help="Manage curated semantic memory")
+queue_app = typer.Typer(help="Deterministic ingestion queue")
 config_app = typer.Typer(help="Configuration management")
 
 app.add_typer(index_app, name="index")
 app.add_typer(discoveries_app, name="discoveries")
 app.add_typer(semantic_app, name="semantic")
+app.add_typer(queue_app, name="queue")
 app.add_typer(config_app, name="config")
 
 
@@ -490,6 +492,16 @@ def semantic_audit():
         for r in audit["stale_candidates"]:
             stale_table.add_row(r["record_id"][:8], r["record_type"], r["project"] or "-", r["title"])
         console.print(stale_table)
+
+
+# === INGESTION QUEUE ===
+
+@queue_app.command("run-once")
+def queue_run_once():
+    """Run one deterministic project-ingest queue step."""
+    from knowledgeforge.ingest_queue import run_once
+    result = run_once()
+    console.print_json(data=result)
 
 
 # === PROJECTS ===
