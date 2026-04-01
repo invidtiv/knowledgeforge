@@ -7,7 +7,7 @@ All work MUST be tracked on the Veritas Kanban board using the `vk` CLI.
 ### CLI Setup
 Environment variables in ~/.bashrc:
 ```bash
-export VK_API_URL="https://localhost:3001"
+export VK_API_URL="http://localhost:3001"
 export VERITAS_ADMIN_KEY="vk_prod_7f8a9b2c1d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a"
 export VK_API_KEY="$VERITAS_ADMIN_KEY"
 export NODE_TLS_REJECT_UNAUTHORIZED=0

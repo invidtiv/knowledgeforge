@@ -14,7 +14,7 @@ eggs/
 .venv/
 venv/
 ENV/
-
+bot_token
 # IDE
 .idea/
 .vscode/
