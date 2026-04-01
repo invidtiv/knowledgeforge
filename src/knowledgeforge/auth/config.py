@@ -2,6 +2,7 @@
 
 import os
 import secrets
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -19,17 +20,21 @@ class AuthGatewayConfig(BaseSettings):
     )
 
     # Gateway networking
-    gateway_host: str = "0.0.0.0"
+    gateway_host: str = "100.115.155.120"
     gateway_port: int = 8744
     upstream_url: str = "http://127.0.0.1:8743"
 
     # JWT
     jwt_secret: str = ""  # Generated at startup if empty
     jwt_algorithm: str = "HS256"
-    session_ttl_seconds: int = 3600  # 1 hour
+    session_ttl_seconds: int = 21600  # 6 hours
+
+    # X-Auth shared secret gate
+    x_auth_secret: str = ""
 
     # Telegram bot
     telegram_bot_token: str = ""  # REQUIRED for remote auth
+    telegram_bot_token_file: str = "/home/bsdev/knowledgeforge/bot_token"
     telegram_owner_chat_id: str = "1082729605"
 
     # SQLite
@@ -50,6 +55,17 @@ class AuthGatewayConfig(BaseSettings):
         """Generate a JWT secret if none was provided."""
         if not self.jwt_secret:
             self.jwt_secret = secrets.token_urlsafe(32)
+        return self
+
+    def load_telegram_token(self) -> "AuthGatewayConfig":
+        """Load Telegram bot token from file when not provided directly."""
+        if self.telegram_bot_token:
+            return self
+        token_file = Path(os.path.expanduser(self.telegram_bot_token_file))
+        if token_file.exists():
+            token = token_file.read_text(encoding="utf-8").strip()
+            if token:
+                self.telegram_bot_token = token
         return self
 
     @property

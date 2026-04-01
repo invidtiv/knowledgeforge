@@ -1,10 +1,11 @@
 """MCP Authentication Gateway — FastAPI reverse proxy.
 
 Sits in front of the MCP server (upstream on 127.0.0.1:8743).
-Local connections bypass auth.  Remote connections require
-Telegram-approved JWT tokens (1-hour TTL).
+Local connections bypass auth. Remote connections require:
+1) valid X-Auth shared secret
+2) Telegram-approved JWT token (6-hour TTL)
 
-Run directly:  python -m knowledgeforge.auth.gateway
+Run directly: python -m knowledgeforge.auth.gateway
 """
 
 from __future__ import annotations
@@ -43,7 +44,7 @@ async def lifespan(app: FastAPI):
     global config, store, bot, _upstream_client, _cleanup_task, _bot_task
 
     config = AuthGatewayConfig()
-    config.ensure_jwt_secret()
+    config.ensure_jwt_secret().load_telegram_token()
 
     # Session store
     store = SessionStore(
@@ -123,6 +124,13 @@ def _get_bearer_token(request: Request) -> str | None:
     if auth.lower().startswith("bearer "):
         return auth[7:].strip()
     return None
+
+
+def _has_valid_x_auth(request: Request) -> bool:
+    """Check required X-Auth shared secret for remote access."""
+    if not config.x_auth_secret:
+        return False
+    return request.headers.get("x-auth", "") == config.x_auth_secret
 
 
 # ── Auth endpoints (not proxied) ────────────────────────────
@@ -214,6 +222,16 @@ async def proxy(request: Request, path: str):
     if _is_local(client_ip):
         return await _proxy_request(request, path)
 
+    # ── Remote: require X-Auth before any approval/token flow ──
+    if not _has_valid_x_auth(request):
+        return JSONResponse(
+            {
+                "error": "invalid_x_auth",
+                "message": "Missing or invalid X-Auth header.",
+            },
+            status_code=401,
+        )
+
     # ── Remote: check token ─────────────────────────────────
     token = _get_bearer_token(request)
 
@@ -271,7 +289,8 @@ async def proxy(request: Request, path: str):
             "request_id": session.request_id,
             "message": (
                 "Connection pending owner approval via Telegram. "
-                f"Poll GET /auth/status/{session.request_id} for updates."
+                "Keep using the same X-Auth header and poll "
+                f"GET /auth/status/{session.request_id} for updates."
             ),
         },
         status_code=401,

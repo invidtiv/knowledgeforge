@@ -65,17 +65,18 @@ class TelegramAuthBot:
         """Send an inline-button message to the owner.  Returns message_id."""
         ts = datetime.fromtimestamp(session.created_at, tz=timezone.utc)
         text = (
-            f"🔐 *MCP Connection Request*\n\n"
+            f"🔐 *KnowledgeForge MCP Access Request*\n\n"
             f"*IP:* `{session.client_ip}`\n"
             f"*User-Agent:* `{_trunc(session.user_agent, 80)}`\n"
             f"*Path:* `{session.requested_path}`\n"
             f"*Time:* {ts:%Y-%m-%d %H:%M:%S UTC}\n"
-            f"*Request ID:* `{session.request_id}`"
+            f"*Request ID:* `{session.request_id}`\n"
+            f"*Grant:* 6 hours"
         )
 
         keyboard = {
             "inline_keyboard": [[
-                {"text": "✅ Approve (1h)", "callback_data": f"approve:{session.request_id}"},
+                {"text": "✅ Approve (6h)", "callback_data": f"approve:{session.request_id}"},
                 {"text": "❌ Deny", "callback_data": f"deny:{session.request_id}"},
             ]]
         }
@@ -115,11 +116,11 @@ class TelegramAuthBot:
             return
         ts = datetime.fromtimestamp(session.approved_at or time.time(), tz=timezone.utc)
         text = (
-            f"✅ *MCP Connection APPROVED*\n\n"
+            f"✅ *KnowledgeForge MCP Access APPROVED*\n\n"
             f"*IP:* `{session.client_ip}`\n"
             f"*Request ID:* `{session.request_id}`\n"
             f"*Approved at:* {ts:%H:%M:%S UTC}\n"
-            f"*Expires:* 1 hour"
+            f"*Expires:* 6 hours"
         )
         await self._edit_message(session.telegram_message_id, text)
 
@@ -242,7 +243,7 @@ class TelegramAuthBot:
             try:
                 session, _token = await self.store.approve(request_id)
                 await self._mark_approved(session)
-                await self._answer_callback(cq_id, "Approved for 1 hour")
+                await self._answer_callback(cq_id, "Approved for 6 hours")
             except ValueError as e:
                 await self._answer_callback(cq_id, str(e))
 
