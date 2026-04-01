@@ -98,6 +98,67 @@ class _DebouncedHandler(FileSystemEventHandler):
                     logger.error(f"Failed to re-ingest {path}: {e}")
 
 
+class _ConversationHandler(FileSystemEventHandler):
+    """Handles JSONL conversation file events with debouncing."""
+
+    def __init__(self, engine, config: KnowledgeForgeConfig):
+        self.engine = engine
+        self.config = config
+        self._pending = {}
+        self._lock = threading.Lock()
+        self._timer = None
+
+    def _is_conversation(self, path: str) -> bool:
+        """Check if file is a conversation JSONL we should index."""
+        if not path.endswith(".jsonl"):
+            return False
+        # Skip subagent files
+        if "subagents" in path.split(os.sep):
+            return False
+        if os.path.basename(path).startswith("agent-"):
+            return False
+        return True
+
+    def on_modified(self, event):
+        if event.is_directory:
+            return
+        self._schedule(event.src_path)
+
+    def on_created(self, event):
+        if event.is_directory:
+            return
+        self._schedule(event.src_path)
+
+    def _schedule(self, path: str):
+        if not self._is_conversation(path):
+            return
+
+        with self._lock:
+            self._pending[path] = time.time()
+
+        if self._timer:
+            self._timer.cancel()
+        self._timer = threading.Timer(self.config.watch_debounce_seconds, self._process_pending)
+        self._timer.daemon = True
+        self._timer.start()
+
+    def _process_pending(self):
+        with self._lock:
+            paths = list(self._pending.keys())
+            self._pending.clear()
+
+        if not paths:
+            return
+
+        logger.info(f"Re-indexing {len(paths)} conversation file(s)")
+        try:
+            # Re-ingest all conversations (incremental — only new exchanges)
+            result = self.engine.ingest_conversations()
+            logger.info(f"  -> {result.chunks_created} conversation chunks created")
+        except Exception as e:
+            logger.error(f"Failed to re-index conversations: {e}")
+
+
 class VaultWatcher:
     """Watches filesystem for changes and triggers re-ingestion."""
 
@@ -111,6 +172,7 @@ class VaultWatcher:
         """Start watching configured directories."""
         self._observer = Observer()
         handler = _DebouncedHandler(self.engine, self.config)
+        conv_handler = _ConversationHandler(self.engine, self.config)
 
         # Watch Obsidian vault
         if self.config.obsidian_vault_path and os.path.isdir(self.config.obsidian_vault_path):
@@ -123,6 +185,12 @@ class VaultWatcher:
             if proj_path and os.path.isdir(proj_path):
                 self._observer.schedule(handler, proj_path, recursive=True)
                 logger.info(f"Watching project: {proj_path}")
+
+        # Watch conversation directories
+        for conv_dir in self.config.conversation_sources:
+            if conv_dir and os.path.isdir(conv_dir):
+                self._observer.schedule(conv_handler, conv_dir, recursive=True)
+                logger.info(f"Watching conversations: {conv_dir}")
 
         self._observer.start()
         self._running = True

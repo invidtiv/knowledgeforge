@@ -11,6 +11,7 @@ This module provides a clean interface to ChromaDB with:
 
 import logging
 import os
+import threading
 from typing import Optional
 
 import chromadb
@@ -40,6 +41,7 @@ class VectorStore:
         self.persist_dir = persist_dir
         self._client = None
         self._collections: dict = {}
+        self._lock = threading.RLock()
         logger.debug(f"VectorStore initialized with persist_dir={persist_dir}")
 
     @property
@@ -53,13 +55,15 @@ class VectorStore:
             ChromaDB client instance
         """
         if self._client is None:
-            try:
-                os.makedirs(self.persist_dir, exist_ok=True)
-                self._client = chromadb.PersistentClient(path=self.persist_dir)
-                logger.info(f"ChromaDB initialized at {self.persist_dir}")
-            except Exception as e:
-                logger.error(f"Failed to initialize ChromaDB: {e}")
-                raise RuntimeError(f"ChromaDB initialization failed: {e}") from e
+            with self._lock:
+                if self._client is None:
+                    try:
+                        os.makedirs(self.persist_dir, exist_ok=True)
+                        self._client = chromadb.PersistentClient(path=self.persist_dir)
+                        logger.info(f"ChromaDB initialized at {self.persist_dir}")
+                    except Exception as e:
+                        logger.error(f"Failed to initialize ChromaDB: {e}")
+                        raise RuntimeError(f"ChromaDB initialization failed: {e}") from e
         return self._client
 
     def _get_collection(self, name: str) -> chromadb.Collection:
@@ -74,15 +78,17 @@ class VectorStore:
             ChromaDB Collection instance
         """
         if name not in self._collections:
-            try:
-                self._collections[name] = self.client.get_or_create_collection(
-                    name=name,
-                    metadata={"hnsw:space": "cosine"}  # Cosine similarity for semantic search
-                )
-                logger.info(f"Collection '{name}' ready (count: {self._collections[name].count()})")
-            except Exception as e:
-                logger.error(f"Failed to get/create collection '{name}': {e}")
-                raise RuntimeError(f"Collection access failed for '{name}': {e}") from e
+            with self._lock:
+                if name not in self._collections:
+                    try:
+                        self._collections[name] = self.client.get_or_create_collection(
+                            name=name,
+                            metadata={"hnsw:space": "cosine"}  # Cosine similarity for semantic search
+                        )
+                        logger.info(f"Collection '{name}' ready (count: {self._collections[name].count()})")
+                    except Exception as e:
+                        logger.error(f"Failed to get/create collection '{name}': {e}")
+                        raise RuntimeError(f"Collection access failed for '{name}': {e}") from e
         return self._collections[name]
 
     def add(
@@ -331,24 +337,26 @@ class VectorStore:
             logger.error(f"Failed to count collection '{collection}': {e}")
             raise RuntimeError(f"Count operation failed for '{collection}': {e}") from e
 
-    def delete_by_source_file(self, collection: str, source_file: str) -> None:
-        """Delete all chunks associated with a specific source file.
+    def delete_by_file_path(self, collection: str, file_path: str) -> None:
+        """Delete all chunks associated with a specific file path.
 
-        Useful for incremental re-indexing when a file changes.
-
-        Args:
-            collection: Collection name (documents or codebase)
-            source_file: The source_file value to match and delete
+        Tries both canonical (`file_path`) and legacy (`source_file`) metadata
+        so existing indexes continue to work after schema migrations.
         """
         try:
-            self.delete(collection, where={"source_file": source_file})
-            logger.info(f"Deleted all chunks for source_file='{source_file}' from '{collection}'")
+            self.delete(collection, where={"file_path": file_path})
+            self.delete(collection, where={"source_file": file_path})
+            logger.info("Deleted all chunks for file_path='%s' from '%s'", file_path, collection)
         except Exception as e:
-            logger.error(f"Failed to delete by source_file '{source_file}': {e}")
-            raise RuntimeError(f"Delete by source_file failed: {e}") from e
+            logger.error("Failed to delete by file_path '%s': %s", file_path, e)
+            raise RuntimeError(f"Delete by file_path failed: {e}") from e
+
+    def delete_by_source_file(self, collection: str, source_file: str) -> None:
+        """Backward-compatible alias for delete_by_file_path()."""
+        self.delete_by_file_path(collection, source_file)
 
     def get_file_hashes(self, collection: str) -> dict[str, str]:
-        """Get a mapping of source_file -> source_file_hash for all files in collection.
+        """Get a mapping of file_path -> content_hash for all files in collection.
 
         Used for incremental indexing to skip unchanged files.
 
@@ -356,7 +364,7 @@ class VectorStore:
             collection: Collection name (documents or codebase)
 
         Returns:
-            Dict mapping source_file to source_file_hash
+            Dict mapping file_path to content_hash
 
         Example:
             >>> store.get_file_hashes("documents")
@@ -375,8 +383,12 @@ class VectorStore:
             hashes = {}
 
             for meta in result.get("metadatas", []):
-                if meta and "source_file" in meta and "source_file_hash" in meta:
-                    hashes[meta["source_file"]] = meta["source_file_hash"]
+                if not meta:
+                    continue
+                file_path = meta.get("file_path") or meta.get("source_file")
+                content_hash = meta.get("content_hash") or meta.get("source_file_hash")
+                if file_path and content_hash:
+                    hashes[str(file_path)] = str(content_hash)
 
             logger.debug(f"Retrieved {len(hashes)} file hashes from '{collection}'")
             return hashes
@@ -386,31 +398,51 @@ class VectorStore:
             raise RuntimeError(f"Get file hashes failed for '{collection}': {e}") from e
 
     def clear_collection(self, collection: str) -> None:
-        """Delete and recreate a collection (full wipe).
+        """Clear all items from a collection.
 
-        WARNING: This permanently deletes all data in the collection!
+        Uses in-place batched deletes instead of dropping/recreating the
+        collection to avoid invalidating collection handles held by other
+        long-lived processes (API/MCP workers).
 
         Args:
             collection: Collection name to clear
         """
         try:
-            # Delete collection if it exists
-            try:
-                self.client.delete_collection(collection)
-                logger.info(f"Deleted collection '{collection}'")
-            except Exception:
-                logger.debug(f"Collection '{collection}' did not exist, creating new")
+            col = self._get_collection(collection)
+            count_before = col.count()
+            if count_before == 0:
+                logger.info(f"Collection '{collection}' already empty")
+                return
 
-            # Remove from local cache
-            self._collections.pop(collection, None)
+            deleted = 0
+            batch_size = 5000
 
-            # Recreate empty collection
-            self._get_collection(collection)
-            logger.info(f"Collection '{collection}' cleared and recreated")
+            while True:
+                batch = col.get(limit=batch_size, include=["metadatas"])
+                ids = batch.get("ids", [])
+                if not ids:
+                    break
+                col.delete(ids=ids)
+                deleted += len(ids)
+
+            logger.info(
+                f"Collection '{collection}' cleared in-place "
+                f"(deleted {deleted} / {count_before} items)"
+            )
 
         except Exception as e:
-            logger.error(f"Failed to clear collection '{collection}': {e}")
-            raise RuntimeError(f"Clear collection failed for '{collection}': {e}") from e
+            logger.warning(
+                f"In-place clear failed for '{collection}' ({e}); "
+                "falling back to delete+recreate"
+            )
+            try:
+                self.client.delete_collection(collection)
+                self._collections.pop(collection, None)
+                self._get_collection(collection)
+                logger.info(f"Collection '{collection}' cleared via fallback recreate")
+            except Exception as inner:
+                logger.error(f"Failed to clear collection '{collection}': {inner}")
+                raise RuntimeError(f"Clear collection failed for '{collection}': {inner}") from inner
 
     def list_collections(self) -> list[str]:
         """List all collection names in the database.

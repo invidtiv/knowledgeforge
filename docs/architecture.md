@@ -600,26 +600,42 @@ tags: [discovery, {category}]
 
 **Available Tools:**
 1. `search_knowledge` - Search across all collections
-2. `store_discovery` - Store agent insight
-3. `get_project_context` - Get project overview
-4. `list_projects` - List indexed projects
-5. `ingest_path` - Index file/directory
-6. `get_discoveries` - Retrieve discoveries
+2. `get_knowledge_context` - Read exact source lines after a search hit
+3. `store_discovery` - Store agent insight
+4. `get_project_context` - Get project overview
+5. `list_projects` - List indexed projects
+6. `ingest_path` - Index file/directory
+7. `get_discoveries` - Retrieve discoveries
+8. `search_conversations` - Search archived conversations
+9. `read_conversation` - Read conversation transcript by session ID
 
 **Tool Schema Example:**
 ```python
 @mcp.tool()
-def search_knowledge(query: str, project: Optional[str] = None, n_results: int = 10):
-    """Search the knowledge base for relevant information."""
-    return engine.search(query, project=project, n_results=n_results)
+def search_knowledge(query: str, project: str = "", max_results: int = 6) -> list[dict]:
+    """Search the knowledge base and return lean snippets."""
+    snippets = engine.search_snippets(query=query, project=project or None, max_results=max_results)
+    return [s.model_dump() for s in snippets]
 ```
 
-**Usage in .mcp.json:**
+**Recommended usage in .mcp.json (shared endpoint):**
 ```json
 {
     "mcpServers": {
         "knowledgeforge": {
-            "command": "python",
+            "command": "npx",
+            "args": ["-y", "mcp-remote", "http://127.0.0.1:8743/mcp"]
+        }
+    }
+}
+```
+
+**Direct stdio usage (legacy/simple):**
+```json
+{
+    "mcpServers": {
+        "knowledgeforge": {
+            "command": "/home/bsdev/knowledgeforge/.venv/bin/python",
             "args": ["-m", "knowledgeforge.interfaces.mcp_server"]
         }
     }

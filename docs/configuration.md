@@ -2,13 +2,16 @@
 
 KnowledgeForge uses a layered configuration system with YAML files and environment variables.
 
+> Current implementation note:
+> The runtime schema is defined by `src/knowledgeforge/config.py`. Some nested examples below are illustrative, but the active keys in this repo are flat keys (for example `max_chunk_size`, `chunk_overlap`, `rest_host`, `rest_port`).
+
 ## Table of Contents
 
 - [Configuration File Location](#configuration-file-location)
+- [Current Runtime Keys](#current-runtime-keys)
 - [Configuration Schema](#configuration-schema)
 - [Environment Variables](#environment-variables)
 - [Example Configurations](#example-configurations)
-- [Advanced Settings](#advanced-settings)
 - [Migration & Defaults](#migration--defaults)
 
 ---
@@ -28,6 +31,34 @@ knowledgeforge config init
 ```
 
 This creates `~/.config/knowledgeforge/config.yaml` with sensible defaults.
+
+---
+
+## Current Runtime Keys
+
+The currently implemented config keys (in `src/knowledgeforge/config.py`) include:
+
+- `data_dir`
+- `obsidian_vault_path`
+- `project_paths`
+- `embedding_model`
+- `embedding_device`
+- `max_chunk_size`
+- `chunk_overlap`
+- `rest_host`
+- `rest_port`
+- `watch_enabled`
+- `watch_debounce_seconds`
+- `obsidian_discoveries_folder`
+- `auto_promote_confirmed`
+- `conversation_sources`
+- `conversation_archive_dir`
+- `conversation_enrichment_dir`
+- `conversation_max_tool_result_chars`
+- `conversation_sync_on_start`
+- `obsidian_extensions`
+- `code_extensions`
+- `ignore_patterns`
 
 ---
 
@@ -108,10 +139,8 @@ rest_api:
   workers: 1
   log_level: info
 
-# MCP server
-mcp_server:
-  enabled: true
-  log_level: info
+# MCP defaults (used when launching MCP from CLI)
+mcp_transport: stdio  # stdio | sse | streamable-http
 
 # Discovery system
 discoveries:
@@ -279,61 +308,29 @@ project_paths:
 
 ### Chunking Settings
 
-#### `chunking.documents`
-- **Type:** `object`
-- **Description:** Document chunking strategy
-
-**Fields:**
-
-##### `chunk_size`
+#### `max_chunk_size`
 - **Type:** `integer`
-- **Default:** `512`
-- **Description:** Target chunk size in tokens
-- **Range:** 100-2048
-- **Recommendation:** 512 for general docs, 256 for short notes
+- **Default:** `1000`
+- **Description:** Target chunk size in approximate tokens for text splitting.
 
-##### `chunk_overlap`
+#### `chunk_overlap`
 - **Type:** `integer`
-- **Default:** `50`
-- **Description:** Overlap between chunks (preserves context)
+- **Default:** `100`
+- **Description:** Approximate token overlap between adjacent chunks.
 
-##### `respect_headings`
-- **Type:** `boolean`
-- **Default:** `true`
-- **Description:** Split on markdown headings when possible
+#### How large files are chunked in practice
 
-##### `preserve_frontmatter`
-- **Type:** `boolean`
-- **Default:** `true`
-- **Description:** Include YAML frontmatter in first chunk
-
----
-
-#### `chunking.code`
-- **Type:** `object`
-- **Description:** Code chunking strategy (AST-aware)
-
-**Fields:**
-
-##### `chunk_size`
-- **Type:** `integer`
-- **Default:** `256`
-- **Description:** Target chunk size for code blocks
-
-##### `chunk_overlap`
-- **Type:** `integer`
-- **Default:** `30`
-- **Description:** Overlap between code chunks
-
-##### `include_context`
-- **Type:** `boolean`
-- **Default:** `true`
-- **Description:** Include parent class/function signatures in chunks
-
-##### `max_depth`
-- **Type:** `integer`
-- **Default:** `3`
-- **Description:** Maximum AST traversal depth
+- Obsidian markdown:
+  - Split by heading sections first.
+  - Sections larger than `max_chunk_size` are split by paragraphs/sentences with `chunk_overlap`.
+- Conversations:
+  - One exchange chunk by default.
+  - Oversized exchange text is split using `max_chunk_size` and `chunk_overlap`.
+- Code (tree-sitter languages):
+  - Chunked structurally (module summary + class/function/method chunks).
+  - Large symbol bodies are currently kept as a single chunk (not token-split).
+- Heuristic files (`.sql`, `.yaml`, `.yml`, `.json`, `.toml`):
+  - Split by statements or sections; fallback uses token chunking.
 
 ---
 
@@ -409,21 +406,49 @@ project_paths:
 
 ### MCP Server Settings
 
-#### `mcp_server`
-- **Type:** `object`
-- **Description:** MCP server for Claude Code integration
-
-**Fields:**
-
-##### `enabled`
-- **Type:** `boolean`
-- **Default:** `true`
-- **Description:** Enable MCP server
-
-##### `log_level`
+#### `mcp_transport`
 - **Type:** `string`
-- **Default:** `info`
-- **Options:** `debug`, `info`, `warning`, `error`, `critical`
+- **Default:** `stdio`
+- **Options:** `stdio`, `sse`, `streamable-http`
+- **Description:** Default MCP transport mode used by KnowledgeForge MCP entrypoint.
+
+#### Runtime Environment Variables
+
+These control MCP runtime behavior when starting `knowledgeforge.interfaces.mcp_server`:
+
+##### `KNOWLEDGEFORGE_MCP_TRANSPORT`
+- **Type:** `string`
+- **Default:** `stdio`
+- **Options:** `stdio`, `sse`, `streamable-http`
+- **Description:** Overrides transport at runtime.
+
+##### `KNOWLEDGEFORGE_MCP_HOST`
+- **Type:** `string`
+- **Default:** `127.0.0.1` (for network transports)
+- **Description:** Host bind address for `sse` and `streamable-http`.
+
+##### `KNOWLEDGEFORGE_MCP_PORT`
+- **Type:** `integer`
+- **Default:** `8743` (for network transports)
+- **Description:** Port bind for `sse` and `streamable-http`.
+
+##### `KNOWLEDGEFORGE_MCP_MOUNT_PATH`
+- **Type:** `string`
+- **Default:** unset
+- **Description:** Optional FastMCP mount path for network transport.
+
+##### `FASTMCP_HOST` / `FASTMCP_PORT`
+- **Type:** `string` / `integer`
+- **Description:** FastMCP-native fallback variables; used if `KNOWLEDGEFORGE_MCP_*` is not set.
+
+#### Recommended Multi-Client Setup
+
+For Codex/Claude/Gemini/Windsurf on the same host, run one shared MCP server and connect clients with `mcp-remote`:
+
+- Shared server endpoint: `http://127.0.0.1:8743/mcp`
+- Client command: `npx -y mcp-remote http://127.0.0.1:8743/mcp`
+
+This avoids one Python MCP process per client/session and reduces memory pressure.
 
 ---
 

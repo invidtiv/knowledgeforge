@@ -1,0 +1,15 @@
+[Unit]
+Description=KnowledgeForge REST API
+After=network.target docker.service
+
+[Service]
+Type=simple
+User=bsdev
+WorkingDirectory=/home/bsdev/knowledgeforge
+ExecStart=/home/bsdev/knowledgeforge/.venv/bin/python -m knowledgeforge.interfaces.rest_api
+Restart=on-failure
+RestartSec=10
+Environment=KNOWLEDGEFORGE_CONFIG=/home/bsdev/knowledgeforge/config.yaml
+
+[Install]
+WantedBy=multi-user.target

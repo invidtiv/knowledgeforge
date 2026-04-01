@@ -1,0 +1,21 @@
+[Unit]
+Description=KnowledgeForge MCP Auth Gateway
+Documentation=https://github.com/bsdev/knowledgeforge
+After=network.target
+# Start after the MCP server if it runs as a service
+After=knowledgeforge-api.service
+
+[Service]
+Type=simple
+User=bsdev
+Group=bsdev
+WorkingDirectory=/home/bsdev/knowledgeforge
+EnvironmentFile=/etc/knowledgeforge/auth.env
+ExecStart=/home/bsdev/knowledgeforge/.venv/bin/python -m knowledgeforge.auth.gateway
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

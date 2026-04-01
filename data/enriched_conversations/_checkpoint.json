@@ -1,0 +1,19 @@
+{
+  "processed_ids": [
+    "d93c6583e701491fbe13147bbb21d516",
+    "ba25502acf9e2303bbd1aad230618273",
+    "a58f79e9f24c12abfd1715b2cc26b3e5"
+  ],
+  "last_updated": "2026-02-09T15:19:55.405731",
+  "stats": {
+    "total_exchanges": 498,
+    "already_processed": 0,
+    "to_process": 3,
+    "enriched": 2,
+    "basic_metadata": 1,
+    "errors": 0,
+    "started_at": "2026-02-09T15:13:18.828173",
+    "enrichment_model": "kimi-k2.5",
+    "completed_at": "2026-02-09T15:19:55.405624"
+  }
+}

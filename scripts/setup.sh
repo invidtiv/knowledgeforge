@@ -12,6 +12,10 @@ echo "Python version: $python_version"
 echo "Installing KnowledgeForge..."
 pip install -e .
 
+# Force CPU-only PyTorch to avoid CUDA package bloat on GPU-less hosts
+echo "Installing CPU-only PyTorch..."
+pip install --index-url https://download.pytorch.org/whl/cpu torch
+
 # Create config directory
 config_dir="$HOME/.config/knowledgeforge"
 mkdir -p "$config_dir"

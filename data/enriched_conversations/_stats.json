@@ -1,0 +1,11 @@
+{
+  "total_exchanges": 498,
+  "already_processed": 0,
+  "to_process": 3,
+  "enriched": 2,
+  "basic_metadata": 1,
+  "errors": 0,
+  "started_at": "2026-02-09T15:13:18.828173",
+  "enrichment_model": "kimi-k2.5",
+  "completed_at": "2026-02-09T15:19:55.405624"
+}

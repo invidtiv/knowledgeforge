@@ -9,6 +9,10 @@ Write-Host "Python version: $pythonVersion"
 Write-Host "Installing KnowledgeForge..."
 pip install -e .
 
+# Force CPU-only PyTorch to avoid CUDA package bloat on GPU-less hosts
+Write-Host "Installing CPU-only PyTorch..."
+pip install --index-url https://download.pytorch.org/whl/cpu torch
+
 # Config directory
 $configDir = "$env:USERPROFILE\.config\knowledgeforge"
 if (-not (Test-Path $configDir)) {

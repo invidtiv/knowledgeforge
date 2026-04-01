@@ -17,13 +17,16 @@ from typing import Optional
 from knowledgeforge.core.models import Chunk
 from knowledgeforge.config import KnowledgeForgeConfig
 from knowledgeforge.ingestion.chunker import (
-    split_by_tokens,
+    split_by_tokens_with_lines,
     count_tokens,
     compute_file_hash,
     generate_chunk_id,
 )
 
 logger = logging.getLogger(__name__)
+
+CODE_CHUNK_SIZE = 400
+CODE_CHUNK_OVERLAP = 80
 
 # Language extension mapping
 LANGUAGE_MAP = {
@@ -257,24 +260,19 @@ class CodeParser:
         if not parser:
             return []
 
-        # Parse the AST
         tree = parser.parse(content.encode())
         root = tree.root_node
 
-        chunks = []
-        symbols = []  # Track symbol names for module summary
+        chunks: list[Chunk] = []
+        symbols = []
         source_bytes = content.encode()
-
-        # Determine relative path from project root
-        # Assume file_path is absolute, extract relative portion
         source_file = file_path
+        dependencies = self._extract_imports(content, language)
 
-        # Walk top-level children
         chunk_index = 0
         for node in root.children:
             node_type = node.type
 
-            # Extract functions
             if node_type in [
                 "function_definition",
                 "function_declaration",
@@ -290,26 +288,37 @@ class CodeParser:
                     errors="replace"
                 )
                 docstring = self._extract_docstring(node_text, language)
-
-                chunk = Chunk(
-                    chunk_id=generate_chunk_id(source_file, chunk_index),
-                    content=node_text,
-                    source_file=source_file,
-                    source_file_hash=file_hash,
-                    chunk_index=chunk_index,
-                    chunk_type="function",
-                    project_name=project_name,
-                    language=language,
-                    symbol_name=symbol_name,
-                    start_line=node.start_point[0] + 1,
-                    end_line=node.end_point[0] + 1,
-                    dependencies=self._extract_imports(content, language),
-                    docstring=docstring,
+                symbol_chunks = self._split_atomic_chunk(
+                    node_text,
+                    node.start_point[0] + 1,
+                    node.end_point[0] + 1,
                 )
-                chunks.append(chunk)
-                chunk_index += 1
 
-            # Extract classes
+                for part_idx, part in enumerate(symbol_chunks, start=1):
+                    part_name = (
+                        symbol_name
+                        if len(symbol_chunks) == 1
+                        else f"{symbol_name}::part{part_idx}"
+                    )
+                    chunks.append(
+                        Chunk(
+                            chunk_id=generate_chunk_id(source_file, chunk_index),
+                            content=part["content"],
+                            file_path=source_file,
+                            content_hash=file_hash,
+                            chunk_index=chunk_index,
+                            chunk_type="function",
+                            project_name=project_name,
+                            language=language,
+                            symbol_name=part_name,
+                            start_line=part["start_line"],
+                            end_line=part["end_line"],
+                            dependencies=dependencies,
+                            docstring=docstring,
+                        )
+                    )
+                    chunk_index += 1
+
             elif node_type in [
                 "class_definition",
                 "class_declaration",
@@ -325,85 +334,114 @@ class CodeParser:
                 node_text = source_bytes[node.start_byte : node.end_byte].decode(
                     errors="replace"
                 )
-
-                # Create class summary chunk
                 class_summary = self._make_class_summary(
                     node, source_bytes, language, class_name
                 )
-                chunk = Chunk(
-                    chunk_id=generate_chunk_id(source_file, chunk_index),
-                    content=class_summary,
-                    source_file=source_file,
-                    source_file_hash=file_hash,
-                    chunk_index=chunk_index,
-                    chunk_type="class",
-                    project_name=project_name,
-                    language=language,
-                    symbol_name=class_name,
-                    start_line=node.start_point[0] + 1,
-                    end_line=node.end_point[0] + 1,
-                    dependencies=self._extract_imports(content, language),
-                    docstring=self._extract_docstring(node_text, language),
+                class_chunks = self._split_atomic_chunk(
+                    class_summary,
+                    node.start_point[0] + 1,
+                    node.end_point[0] + 1,
                 )
-                chunks.append(chunk)
-                chunk_index += 1
+                class_docstring = self._extract_docstring(node_text, language)
 
-                # Extract methods from class
+                for part_idx, part in enumerate(class_chunks, start=1):
+                    part_name = (
+                        class_name
+                        if len(class_chunks) == 1
+                        else f"{class_name}::summary_part{part_idx}"
+                    )
+                    chunks.append(
+                        Chunk(
+                            chunk_id=generate_chunk_id(source_file, chunk_index),
+                            content=part["content"],
+                            file_path=source_file,
+                            content_hash=file_hash,
+                            chunk_index=chunk_index,
+                            chunk_type="class",
+                            project_name=project_name,
+                            language=language,
+                            symbol_name=part_name,
+                            start_line=part["start_line"],
+                            end_line=part["end_line"],
+                            dependencies=dependencies,
+                            docstring=class_docstring,
+                        )
+                    )
+                    chunk_index += 1
+
                 for child in node.children:
-                    if child.type in [
+                    if child.type not in [
                         "function_definition",
                         "method_definition",
                         "function_item",
                     ]:
-                        method_name = self._get_node_name(child, source_bytes)
-                        if not method_name:
-                            continue
+                        continue
 
-                        method_text = source_bytes[
-                            child.start_byte : child.end_byte
-                        ].decode(errors="replace")
-                        method_docstring = self._extract_docstring(
-                            method_text, language
-                        )
+                    method_name = self._get_node_name(child, source_bytes)
+                    if not method_name:
+                        continue
 
-                        chunk = Chunk(
-                            chunk_id=generate_chunk_id(source_file, chunk_index),
-                            content=method_text,
-                            source_file=source_file,
-                            source_file_hash=file_hash,
-                            chunk_index=chunk_index,
-                            chunk_type="method",
-                            project_name=project_name,
-                            language=language,
-                            symbol_name=f"{class_name}.{method_name}",
-                            start_line=child.start_point[0] + 1,
-                            end_line=child.end_point[0] + 1,
-                            dependencies=self._extract_imports(content, language),
-                            docstring=method_docstring,
+                    method_text = source_bytes[
+                        child.start_byte : child.end_byte
+                    ].decode(errors="replace")
+                    method_docstring = self._extract_docstring(method_text, language)
+                    method_chunks = self._split_atomic_chunk(
+                        method_text,
+                        child.start_point[0] + 1,
+                        child.end_point[0] + 1,
+                    )
+
+                    for part_idx, part in enumerate(method_chunks, start=1):
+                        method_symbol = (
+                            f"{class_name}.{method_name}"
+                            if len(method_chunks) == 1
+                            else f"{class_name}.{method_name}::part{part_idx}"
                         )
-                        chunks.append(chunk)
+                        chunks.append(
+                            Chunk(
+                                chunk_id=generate_chunk_id(source_file, chunk_index),
+                                content=part["content"],
+                                file_path=source_file,
+                                content_hash=file_hash,
+                                chunk_index=chunk_index,
+                                chunk_type="method",
+                                project_name=project_name,
+                                language=language,
+                                symbol_name=method_symbol,
+                                start_line=part["start_line"],
+                                end_line=part["end_line"],
+                                dependencies=dependencies,
+                                docstring=method_docstring,
+                            )
+                        )
                         chunk_index += 1
 
-        # Create module summary chunk
-        module_summary = self._make_module_summary(
-            file_path, content, language, symbols
-        )
-        summary_chunk = Chunk(
-            chunk_id=generate_chunk_id(source_file, chunk_index),
-            content=module_summary,
-            source_file=source_file,
-            source_file_hash=file_hash,
-            chunk_index=chunk_index,
-            chunk_type="module_summary",
-            project_name=project_name,
-            language=language,
-            symbol_name="",
+        module_summary = self._make_module_summary(file_path, content, language, symbols)
+        summary_chunks = self._split_atomic_chunk(
+            module_summary,
             start_line=1,
-            end_line=len(content.splitlines()),
-            dependencies=self._extract_imports(content, language),
-            docstring="",
+            end_line=max(1, len(content.splitlines())),
         )
-        chunks.insert(0, summary_chunk)
+        for part in reversed(summary_chunks):
+            chunks.insert(
+                0,
+                Chunk(
+                    chunk_id=generate_chunk_id(source_file, chunk_index),
+                    content=part["content"],
+                    file_path=source_file,
+                    content_hash=file_hash,
+                    chunk_index=chunk_index,
+                    chunk_type="module_summary",
+                    project_name=project_name,
+                    language=language,
+                    symbol_name="",
+                    start_line=part["start_line"],
+                    end_line=part["end_line"],
+                    dependencies=dependencies,
+                    docstring="",
+                ),
+            )
+            chunk_index += 1
 
         return chunks
 
@@ -428,63 +466,156 @@ class CodeParser:
         """
         ext = Path(file_path).suffix.lower()
         source_file = file_path
-        chunks = []
+        chunks: list[Chunk] = []
+        chunk_index = 0
+        total_lines = max(1, len(content.splitlines()))
 
-        # SQL: Split by statement terminator
         if ext == ".sql":
-            statements = [s.strip() for s in content.split(";") if s.strip()]
-            for idx, stmt in enumerate(statements):
-                chunk = Chunk(
-                    chunk_id=generate_chunk_id(source_file, idx),
-                    content=stmt,
-                    source_file=source_file,
-                    source_file_hash=file_hash,
-                    chunk_index=idx,
-                    chunk_type="config",
-                    project_name=project_name,
-                    language="sql",
-                )
-                chunks.append(chunk)
+            for statement, start_line, end_line in self._split_sql_statements(content):
+                for part in self._split_atomic_chunk(statement, start_line, end_line):
+                    chunks.append(
+                        Chunk(
+                            chunk_id=generate_chunk_id(source_file, chunk_index),
+                            content=part["content"],
+                            file_path=source_file,
+                            content_hash=file_hash,
+                            chunk_index=chunk_index,
+                            chunk_type="config",
+                            project_name=project_name,
+                            language="sql",
+                            start_line=part["start_line"],
+                            end_line=part["end_line"],
+                        )
+                    )
+                    chunk_index += 1
 
-        # YAML/JSON/TOML: Split by top-level sections
         elif ext in {".yaml", ".yml", ".json", ".toml"}:
-            # For structured data, split into logical sections
-            # Use blank-line-separated blocks as approximation
-            sections = content.split("\n\n")
-            for idx, section in enumerate(sections):
-                if not section.strip():
-                    continue
-                chunk = Chunk(
-                    chunk_id=generate_chunk_id(source_file, idx),
-                    content=section.strip(),
-                    source_file=source_file,
-                    source_file_hash=file_hash,
-                    chunk_index=idx,
-                    chunk_type="config",
-                    project_name=project_name,
-                    language=ext[1:],  # Remove leading dot
-                )
-                chunks.append(chunk)
+            language_name = ext[1:]
+            for section_text, start_line, end_line in self._split_blankline_sections(
+                content
+            ):
+                for part in self._split_atomic_chunk(section_text, start_line, end_line):
+                    chunks.append(
+                        Chunk(
+                            chunk_id=generate_chunk_id(source_file, chunk_index),
+                            content=part["content"],
+                            file_path=source_file,
+                            content_hash=file_hash,
+                            chunk_index=chunk_index,
+                            chunk_type="config",
+                            project_name=project_name,
+                            language=language_name,
+                            start_line=part["start_line"],
+                            end_line=part["end_line"],
+                        )
+                    )
+                    chunk_index += 1
 
-        # Fallback: Split by token size
         else:
-            text_chunks = split_by_tokens(
-                content, self.config.max_chunk_size, self.config.chunk_overlap
-            )
-            for idx, text_chunk in enumerate(text_chunks):
-                chunk = Chunk(
-                    chunk_id=generate_chunk_id(source_file, idx),
-                    content=text_chunk,
-                    source_file=source_file,
-                    source_file_hash=file_hash,
-                    chunk_index=idx,
-                    chunk_type="config",
-                    project_name=project_name,
-                    language="text",
+            for part in self._split_atomic_chunk(content, 1, total_lines):
+                chunks.append(
+                    Chunk(
+                        chunk_id=generate_chunk_id(source_file, chunk_index),
+                        content=part["content"],
+                        file_path=source_file,
+                        content_hash=file_hash,
+                        chunk_index=chunk_index,
+                        chunk_type="config",
+                        project_name=project_name,
+                        language="text",
+                        start_line=part["start_line"],
+                        end_line=part["end_line"],
+                    )
                 )
-                chunks.append(chunk)
+                chunk_index += 1
 
         return chunks
+
+    def _split_atomic_chunk(
+        self, text: str, start_line: int, end_line: int
+    ) -> list[dict]:
+        """Split oversized structural chunks using 400/80 token windows.
+
+        Returns a list of dicts with content + line ranges.
+        """
+        if not text.strip():
+            return []
+
+        token_count = count_tokens(text)
+        if token_count <= CODE_CHUNK_SIZE:
+            return [
+                {
+                    "content": text,
+                    "start_line": int(start_line),
+                    "end_line": int(end_line),
+                }
+            ]
+
+        split_chunks = split_by_tokens_with_lines(
+            text=text,
+            max_size=CODE_CHUNK_SIZE,
+            overlap=CODE_CHUNK_OVERLAP,
+            start_line=start_line,
+        )
+        if not split_chunks:
+            return [
+                {
+                    "content": text,
+                    "start_line": int(start_line),
+                    "end_line": int(end_line),
+                }
+            ]
+
+        return [
+            {
+                "content": c.text,
+                "start_line": int(c.start_line),
+                "end_line": int(c.end_line),
+            }
+            for c in split_chunks
+        ]
+
+    def _split_sql_statements(self, content: str) -> list[tuple[str, int, int]]:
+        """Split SQL content into statements with line ranges."""
+        statements: list[tuple[str, int, int]] = []
+        pattern = re.compile(r"[^;]+;?", re.DOTALL)
+
+        for match in pattern.finditer(content):
+            statement = match.group(0).strip()
+            if not statement:
+                continue
+            start_line = content[: match.start()].count("\n") + 1
+            end_line = content[: match.end()].count("\n") + 1
+            statements.append((statement, start_line, end_line))
+
+        return statements
+
+    def _split_blankline_sections(self, content: str) -> list[tuple[str, int, int]]:
+        """Split config-like content on blank lines while tracking line ranges."""
+        lines = content.splitlines()
+        if not lines:
+            return []
+
+        sections: list[tuple[str, int, int]] = []
+        buffer: list[str] = []
+        start_line = 1
+
+        for idx, line in enumerate(lines, start=1):
+            if not line.strip():
+                if buffer:
+                    sections.append(("\n".join(buffer).strip(), start_line, idx - 1))
+                    buffer = []
+                start_line = idx + 1
+                continue
+
+            if not buffer:
+                start_line = idx
+            buffer.append(line)
+
+        if buffer:
+            sections.append(("\n".join(buffer).strip(), start_line, len(lines)))
+
+        return [section for section in sections if section[0].strip()]
 
     def _extract_imports(self, content: str, language: str) -> str:
         """Extract import statements from source code.

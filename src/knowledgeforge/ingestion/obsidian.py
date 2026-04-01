@@ -22,14 +22,16 @@ import frontmatter
 from knowledgeforge.core.models import Chunk
 from knowledgeforge.config import KnowledgeForgeConfig
 from knowledgeforge.ingestion.chunker import (
-    split_by_tokens,
+    split_by_tokens_with_lines,
     count_tokens,
     compute_file_hash,
     generate_chunk_id,
-    merge_small_chunks
 )
 
 logger = logging.getLogger(__name__)
+
+MARKDOWN_CHUNK_SIZE = 400
+MARKDOWN_CHUNK_OVERLAP = 80
 
 
 class ObsidianParser:
@@ -96,11 +98,9 @@ class ObsidianParser:
             all_tags = list(set(fm_tags + inline_tags))
             all_tags_str = ",".join(sorted(all_tags))
 
-            # Resolve text embeds
-            content = self.resolve_embeds(content)
-
             # Split content into heading sections
             sections = self._split_by_headings(content)
+            content_start_line = self._find_content_start_line(raw_content, content)
 
             # Compute file hash
             file_hash = compute_file_hash(file_path)
@@ -115,15 +115,17 @@ class ObsidianParser:
             for section in sections:
                 section_content = section['content']
                 heading_path = section['heading_path']
+                section_start_line = section["start_line"] + content_start_line - 1
+                section_end_line = section["end_line"] + content_start_line - 1
 
                 # Check if section fits in one chunk
-                if count_tokens(section_content) <= self.config.max_chunk_size:
+                if count_tokens(section_content) <= MARKDOWN_CHUNK_SIZE:
                     # Single chunk for this section
                     chunk = Chunk(
                         chunk_id=generate_chunk_id(rel_path, chunk_index),
                         content=section_content,
-                        source_file=rel_path,
-                        source_file_hash=file_hash,
+                        file_path=rel_path,
+                        content_hash=file_hash,
                         chunk_index=chunk_index,
                         chunk_type="heading_section" if heading_path else "paragraph",
                         vault_name=self.vault_name,
@@ -132,23 +134,26 @@ class ObsidianParser:
                         frontmatter_project=fm_data.get('project', ''),
                         frontmatter_status=fm_data.get('status', ''),
                         wiki_links_out=",".join(wiki_links),
+                        start_line=section_start_line,
+                        end_line=section_end_line,
                     )
                     chunks.append(chunk)
                     chunk_index += 1
                 else:
                     # Section too large, split with overlap
-                    section_chunks = split_by_tokens(
+                    section_chunks = split_by_tokens_with_lines(
                         section_content,
-                        max_size=self.config.max_chunk_size,
-                        overlap=self.config.chunk_overlap
+                        max_size=MARKDOWN_CHUNK_SIZE,
+                        overlap=MARKDOWN_CHUNK_OVERLAP,
+                        start_line=section_start_line,
                     )
 
                     for sc in section_chunks:
                         chunk = Chunk(
                             chunk_id=generate_chunk_id(rel_path, chunk_index),
-                            content=sc,
-                            source_file=rel_path,
-                            source_file_hash=file_hash,
+                            content=sc.text,
+                            file_path=rel_path,
+                            content_hash=file_hash,
                             chunk_index=chunk_index,
                             chunk_type="heading_section" if heading_path else "paragraph",
                             vault_name=self.vault_name,
@@ -157,6 +162,8 @@ class ObsidianParser:
                             frontmatter_project=fm_data.get('project', ''),
                             frontmatter_status=fm_data.get('status', ''),
                             wiki_links_out=",".join(wiki_links),
+                            start_line=sc.start_line,
+                            end_line=sc.end_line,
                         )
                         chunks.append(chunk)
                         chunk_index += 1
@@ -166,8 +173,8 @@ class ObsidianParser:
             summary_chunk = Chunk(
                 chunk_id=generate_chunk_id(rel_path, 0),
                 content=summary_content,
-                source_file=rel_path,
-                source_file_hash=file_hash,
+                file_path=rel_path,
+                content_hash=file_hash,
                 chunk_index=0,
                 chunk_type="file_summary",
                 vault_name=self.vault_name,
@@ -176,6 +183,8 @@ class ObsidianParser:
                 frontmatter_project=fm_data.get('project', ''),
                 frontmatter_status=fm_data.get('status', ''),
                 wiki_links_out=",".join(wiki_links),
+                start_line=1,
+                end_line=max(1, len(raw_content.splitlines())),
             )
 
             # Insert summary at the beginning
@@ -222,6 +231,13 @@ class ObsidianParser:
                 chunks = self.parse_file(str(file_path))
                 all_chunks.extend(chunks)
                 files_processed += 1
+                if files_processed % 25 == 0:
+                    logger.info(
+                        "Vault parse progress: %s files, %s chunks (latest: %s)",
+                        files_processed,
+                        len(all_chunks),
+                        file_path,
+                    )
 
         logger.info(f"Parsed {files_processed} files, created {len(all_chunks)} chunks")
         return all_chunks
@@ -360,6 +376,16 @@ class ObsidianParser:
             logger.warning(f"Error parsing frontmatter: {e}")
             return ({}, content)
 
+    def _find_content_start_line(self, raw_content: str, content: str) -> int:
+        """Find the starting line of frontmatter-stripped content in the file."""
+        if not content:
+            return 1
+
+        idx = raw_content.find(content)
+        if idx < 0:
+            return 1
+        return raw_content[:idx].count("\n") + 1
+
     def _extract_wiki_links(self, content: str) -> list[str]:
         """
         Extract all [[wiki-links]] from content.
@@ -400,81 +426,71 @@ class ObsidianParser:
         return list(set([m.strip() for m in matches]))
 
     def _split_by_headings(self, content: str) -> list[dict]:
-        """
-        Split content by headings into sections.
+        """Split markdown content into heading-aware sections with line ranges."""
+        heading_pattern = r"^(#{1,6})\s+(.+)$"
 
-        Returns list of {"heading": str, "level": int, "content": str, "heading_path": str}
-        H2 is primary boundary, H3 is secondary.
-        Each section includes its heading path: "H1 > H2 > H3"
-
-        Args:
-            content: Markdown content
-
-        Returns:
-            List of section dictionaries
-        """
-        # Pattern to find headings
-        heading_pattern = r'^(#{1,6})\s+(.+)$'
-
-        lines = content.split('\n')
+        lines = content.split("\n")
         sections = []
-        current_section_lines = []
-        heading_stack = []  # Stack to track heading hierarchy
+        current_section_lines: list[str] = []
+        current_start_line = 1
+        heading_stack: list[dict] = []
 
-        for line in lines:
+        for line_number, line in enumerate(lines, start=1):
             match = re.match(heading_pattern, line)
 
             if match:
-                # Save previous section if exists
                 if current_section_lines:
-                    section_content = '\n'.join(current_section_lines).strip()
+                    section_content = "\n".join(current_section_lines).strip()
                     if section_content:
-                        # Build heading path from stack
-                        heading_path = " > ".join([h['text'] for h in heading_stack])
-                        sections.append({
-                            'heading': heading_stack[-1]['text'] if heading_stack else '',
-                            'level': heading_stack[-1]['level'] if heading_stack else 0,
-                            'content': section_content,
-                            'heading_path': heading_path
-                        })
-                    current_section_lines = []
+                        heading_path = " > ".join([h["text"] for h in heading_stack])
+                        sections.append(
+                            {
+                                "heading": heading_stack[-1]["text"] if heading_stack else "",
+                                "level": heading_stack[-1]["level"] if heading_stack else 0,
+                                "content": section_content,
+                                "heading_path": heading_path,
+                                "start_line": current_start_line,
+                                "end_line": line_number - 1,
+                            }
+                        )
+                current_section_lines = []
+                current_start_line = line_number
 
-                # Update heading stack
                 level = len(match.group(1))
                 heading_text = match.group(2).strip()
 
-                # Pop headings of same or lower level
-                while heading_stack and heading_stack[-1]['level'] >= level:
+                while heading_stack and heading_stack[-1]["level"] >= level:
                     heading_stack.pop()
+                heading_stack.append({"level": level, "text": heading_text})
 
-                # Push new heading
-                heading_stack.append({'level': level, 'text': heading_text})
+            current_section_lines.append(line)
 
-                # Start new section with heading
-                current_section_lines.append(line)
-            else:
-                current_section_lines.append(line)
-
-        # Save last section
         if current_section_lines:
-            section_content = '\n'.join(current_section_lines).strip()
+            section_content = "\n".join(current_section_lines).strip()
             if section_content:
-                heading_path = " > ".join([h['text'] for h in heading_stack])
-                sections.append({
-                    'heading': heading_stack[-1]['text'] if heading_stack else '',
-                    'level': heading_stack[-1]['level'] if heading_stack else 0,
-                    'content': section_content,
-                    'heading_path': heading_path
-                })
+                heading_path = " > ".join([h["text"] for h in heading_stack])
+                sections.append(
+                    {
+                        "heading": heading_stack[-1]["text"] if heading_stack else "",
+                        "level": heading_stack[-1]["level"] if heading_stack else 0,
+                        "content": section_content,
+                        "heading_path": heading_path,
+                        "start_line": current_start_line,
+                        "end_line": len(lines),
+                    }
+                )
 
-        # If no headings found, return entire content as single section
         if not sections and content.strip():
-            sections.append({
-                'heading': '',
-                'level': 0,
-                'content': content.strip(),
-                'heading_path': ''
-            })
+            sections.append(
+                {
+                    "heading": "",
+                    "level": 0,
+                    "content": content.strip(),
+                    "heading_path": "",
+                    "start_line": 1,
+                    "end_line": max(1, len(lines)),
+                }
+            )
 
         return sections
 
@@ -488,6 +504,11 @@ class ObsidianParser:
         Returns:
             True if path should be ignored
         """
+        # Skip generated rollup docs that duplicate the rest of each project and
+        # can massively increase indexing/embedding time.
+        if path.name.lower().endswith("production.md"):
+            return True
+
         path_str = str(path)
         for pattern in self.config.ignore_patterns:
             if pattern in path_str:

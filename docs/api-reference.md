@@ -36,46 +36,47 @@ Search across all indexed documents, code, and discoveries.
 **Request Body:**
 ```json
 {
-    "query": "authentication implementation",
-    "project": "my-app",
-    "collection": "code",
-    "n_results": 10,
-    "filter": {
-        "file_type": "python"
-    }
+  "query": "authentication implementation",
+  "project": "my-app",
+  "collections": ["codebase", "documents", "discoveries", "conversations"],
+  "tags": ["auth"],
+  "language": "python",
+  "category": "bugfix",
+  "confirmed_only": false,
+  "n_results": 10,
+  "min_score": 0.2
 }
 ```
 
 **Parameters:**
 - `query` (string, required) - Search query text
 - `project` (string, optional) - Filter by project name
-- `collection` (string, optional) - Filter by collection: `documents`, `code`, or `discoveries`
-- `n_results` (integer, optional, default: 10) - Number of results to return (max: 100)
-- `filter` (object, optional) - Additional metadata filters
+- `collections` (array[string], optional) - Collections to search. Defaults to all.
+- `tags` (array[string], optional) - Tag filter (documents collection)
+- `language` (string, optional) - Language filter (codebase collection)
+- `category` (string, optional) - Category filter (discoveries/conversations)
+- `confirmed_only` (boolean, optional, default: `false`) - Confirmed discoveries only
+- `n_results` (integer, optional, default: 5) - Number of results to return
+- `min_score` (number, optional, default: 0.0) - Minimum relevance score (0-1)
 
 **Response:**
 ```json
 {
-    "results": [
-        {
-            "id": "doc_abc123",
-            "content": "Authentication is handled by OAuth2 flow...",
-            "metadata": {
-                "source": "/path/to/auth.py",
-                "project": "my-app",
-                "collection": "code",
-                "file_type": "python",
-                "function_name": "authenticate_user",
-                "line_start": 45,
-                "line_end": 78
-            },
-            "distance": 0.234,
-            "similarity": 0.766
-        }
-    ],
-    "query": "authentication implementation",
-    "n_results": 1,
-    "total_time_ms": 123
+  "query": "authentication implementation",
+  "results": [
+    {
+      "content": "Authentication is handled by OAuth2 flow...",
+      "score": 0.766,
+      "metadata": {
+        "source_file": "src/auth.py",
+        "project_name": "my-app",
+        "language": "python"
+      },
+      "collection": "codebase"
+    }
+  ],
+  "total_results": 1,
+  "search_time_ms": 123.4
 }
 ```
 
@@ -91,6 +92,8 @@ curl -X POST http://127.0.0.1:8742/api/v1/search \
   -d '{
     "query": "how does authentication work",
     "project": "my-app",
+    "collections": ["codebase"],
+    "language": "python",
     "n_results": 5
   }'
 ```

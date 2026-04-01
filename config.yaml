@@ -2,11 +2,67 @@
 data_dir: ~/.local/share/knowledgeforge
 
 # Obsidian vault
-obsidian_vault_path: ~/Documents/ObsidianVault
+obsidian_vault_path: /home/bsdev/Obsidian/config/vaults/bsdev
 obsidian_extensions: [".md"]
 
 # Code projects to index
-project_paths: []
+project_paths:
+  - path: /home/bsdev/BS/AndroidSynchApp
+    name: AndroidSynchApp
+  - path: /home/bsdev/BS/BShotline
+    name: BShotline
+  - path: /home/bsdev/BS/Bshome
+    name: Bshome
+  - path: /home/bsdev/BS/MiniNavimoe
+    name: MiniNavimoe
+  - path: /home/bsdev/BS/Navimoe
+    name: Navimoe
+  - path: /home/bsdev/BS/Remote-Sync
+    name: Remote-Sync
+  - path: /home/bsdev/BS/ScraptRunBot
+    name: ScraptRunBot
+  - path: /home/bsdev/BS/SentryOG
+    name: SentryOG
+  - path: /home/bsdev/BS/bouncycollection
+    name: bouncycollection
+  - path: /home/bsdev/BS/bs_alert_bot
+    name: bs_alert_bot
+  - path: /home/bsdev/BS/bsdeals
+    name: bsdeals
+  - path: /home/bsdev/BS/bsemulatorcontroler
+    name: bsemulatorcontroler
+  - path: /home/bsdev/BS/bsgangmoves
+    name: bsgangmoves
+  - path: /home/bsdev/BS/bsgangranking
+    name: bsgangranking
+  - path: /home/bsdev/BS/bshomebot
+    name: bshomebot
+  - path: /home/bsdev/BS/bskillcount
+    name: bskillcount
+  - path: /home/bsdev/BS/bslauncher
+    name: bslauncher
+  - path: /home/bsdev/BS/bslogs
+    name: bslogs
+  - path: /home/bsdev/BS/bsnavimoe-react
+    name: bsnavimoe-react
+  - path: /home/bsdev/BS/bsplaybook
+    name: bsplaybook
+  - path: /home/bsdev/BS/bsringall
+    name: bsringall
+  - path: /home/bsdev/BS/bssentrylistenner
+    name: bssentrylistenner
+  - path: /home/bsdev/BS/bstimer
+    name: bstimer
+  - path: /home/bsdev/BS/bsviewer
+    name: bsviewer
+  - path: /home/bsdev/BS/bsvmadminbot
+    name: bsvmadminbot
+  - path: /home/bsdev/BS/supabase-admin
+    name: supabase-admin
+  - path: /home/bsdev/BS/supabase-schema-viz
+    name: supabase-schema-viz
+  - path: /home/bsdev/BS/thevault
+    name: thevault
 
 # Embedding
 embedding_model: nomic-ai/nomic-embed-text-v1.5
@@ -28,6 +84,16 @@ watch_debounce_seconds: 2.0
 obsidian_discoveries_folder: KnowledgeForge Discoveries
 auto_promote_confirmed: true
 
+# Conversations
+conversation_sources:
+  - ~/.claude/projects
+  - ~/.config/superpowers/conversation-archive/_codex
+  - ~/.config/superpowers/conversation-archive/_gemini
+conversation_archive_dir: ~/.config/superpowers/conversation-archive
+conversation_enrichment_dir: /home/bsdev/knowledgeforge/data/enriched_conversations
+conversation_max_tool_result_chars: 500
+conversation_sync_on_start: true
+
 # Ignore patterns
 ignore_patterns:
   - node_modules
@@ -39,3 +105,4 @@ ignore_patterns:
   - dist
   - build
   - .next
+  - .trash
