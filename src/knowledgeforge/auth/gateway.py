@@ -43,6 +43,8 @@ _bot_task: asyncio.Task | None = None
 async def lifespan(app: FastAPI):
     global config, store, bot, _upstream_client, _cleanup_task, _bot_task
 
+    _suppress_httpx_token_logging()
+
     config = AuthGatewayConfig()
     config.ensure_jwt_secret().load_telegram_token()
 
@@ -114,8 +116,15 @@ def _get_client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def _is_local(ip: str) -> bool:
-    """Check if an IP is a local/loopback address."""
+def _is_local(ip: str, request: Request | None = None) -> bool:
+    """Check if an IP is a local/loopback address.
+
+    Tailscale Funnel traffic arrives from 127.0.0.1 but carries the
+    ``Tailscale-Funnel: true`` header -- that traffic is public and must
+    NOT bypass auth.
+    """
+    if request and request.headers.get("tailscale-funnel") == "true":
+        return False
     return ip in config.local_ips or ip.startswith("127.") or ip == "::1"
 
 
@@ -186,6 +195,35 @@ async def auth_health():
     }
 
 
+@app.get("/auth/audit")
+async def auth_audit(request: Request, limit: int = 20):
+    """Recent audit log entries (local access only)."""
+    client_ip = _get_client_ip(request)
+    if not _is_local(client_ip, request):
+        return JSONResponse(
+            {"error": "forbidden", "message": "Audit log is local-only."},
+            status_code=403,
+        )
+    entries = await store.recent_audit(limit=min(limit, 100))
+    return {"entries": entries, "count": len(entries)}
+
+
+@app.get("/auth/sessions")
+async def auth_sessions(request: Request):
+    """List active sessions (local access only)."""
+    client_ip = _get_client_ip(request)
+    if not _is_local(client_ip, request):
+        return JSONResponse(
+            {"error": "forbidden", "message": "Sessions list is local-only."},
+            status_code=403,
+        )
+    active = await store.list_active()
+    return {
+        "sessions": [s.model_dump() for s in active],
+        "count": len(active),
+    }
+
+
 # ── Token cache for pending approvals ──────────────────────
 
 _pending_tokens: dict[str, str] = {}
@@ -218,12 +256,35 @@ async def proxy(request: Request, path: str):
     """
     client_ip = _get_client_ip(request)
 
+    # ── OAuth discovery — return 404 so mcp-remote skips OAuth ──
+    if path.startswith(".well-known/") or path == "register":
+        return JSONResponse({"error": "not_found"}, status_code=404)
+
     # ── Local bypass ────────────────────────────────────────
-    if _is_local(client_ip):
+    if _is_local(client_ip, request):
         return await _proxy_request(request, path)
+
+    # ── Terminated IP check ─────────────────────────────────
+    # Must run before X-Auth validation so blocked IPs are rejected even
+    # if they present the correct shared secret.
+    try:
+        if await store.is_ip_terminated(client_ip):
+            logger.warning("Blocked terminated IP %s for /%s", client_ip, path)
+            return JSONResponse(
+                {
+                    "error": "terminated",
+                    "message": "Connection terminated by operator.",
+                },
+                status_code=403,
+            )
+    except Exception:
+        logger.exception("Error checking terminated IP %s", client_ip)
 
     # ── Remote: require X-Auth before any approval/token flow ──
     if not _has_valid_x_auth(request):
+        await store._audit("invalid_x_auth", client_ip=client_ip,
+                           detail=f"path=/{path}")
+        logger.warning("Invalid X-Auth from %s for /%s", client_ip, path)
         return JSONResponse(
             {
                 "error": "invalid_x_auth",
@@ -241,6 +302,11 @@ async def proxy(request: Request, path: str):
             # Valid token — optionally check IP binding
             claims = tm.validate_token(token, config.jwt_secret, config.jwt_algorithm)
             if claims and claims.get("ip") != client_ip:
+                await store._audit("ip_mismatch", session_id=session.id,
+                                   client_ip=client_ip,
+                                   detail=f"token_ip={claims.get('ip')}")
+                logger.warning("IP mismatch: token for %s used from %s",
+                               claims.get("ip"), client_ip)
                 return JSONResponse(
                     {"error": "ip_mismatch",
                      "message": "Token was issued for a different IP address."},
@@ -254,47 +320,29 @@ async def proxy(request: Request, path: str):
                 status_code=401,
             )
 
-    # ── No token: initiate approval flow ────────────────────
+    # ── No token but valid X-Auth: proxy through directly ────
+    # X-Auth is a shared secret that already proves authorization.
+    # mcp-remote cannot handle custom auth flows (Telegram approval),
+    # so we treat a valid X-Auth as sufficient for access.
+    logger.info("X-Auth bypass for %s on /%s (no Bearer token)", client_ip, path)
 
-    # Rate limiting
-    if await store.recent_request_from_ip(client_ip, config.request_cooldown_seconds):
-        return JSONResponse(
-            {"error": "rate_limited",
-             "message": f"Please wait {config.request_cooldown_seconds}s between requests."},
-            status_code=429,
-        )
-
-    if await store.total_pending() >= config.max_pending_requests:
-        return JSONResponse(
-            {"error": "too_many_pending",
-             "message": "Too many pending requests. Try again later."},
-            status_code=429,
-        )
-
-    if not bot:
-        return JSONResponse(
-            {"error": "no_approval_channel",
-             "message": "Remote auth is not configured (no Telegram bot token)."},
-            status_code=503,
-        )
-
-    # Create pending session and send Telegram notification
+    # Track the connection and alert via Telegram if it is new.
     user_agent = request.headers.get("user-agent", "")
-    session = await store.create_pending(client_ip, user_agent, f"/{path}")
-    await bot.send_approval_request(session)
+    try:
+        conn_id, is_new = await store.track_x_auth_connection(client_ip, user_agent)
+        if is_new and bot:
+            try:
+                msg_id = await bot.send_connection_alert(
+                    conn_id, client_ip, user_agent, request.url.path
+                )
+                if msg_id:
+                    await store.set_x_auth_telegram_message_id(conn_id, msg_id)
+            except Exception:
+                logger.exception("Failed to send X-Auth connection alert")
+    except Exception:
+        logger.exception("Failed to track X-Auth connection from %s", client_ip)
 
-    return JSONResponse(
-        {
-            "error": "pending_approval",
-            "request_id": session.request_id,
-            "message": (
-                "Connection pending owner approval via Telegram. "
-                "Keep using the same X-Auth header and poll "
-                f"GET /auth/status/{session.request_id} for updates."
-            ),
-        },
-        status_code=401,
-    )
+    return await _proxy_request(request, path)
 
 
 # ── Proxy implementation ───────────────────────────────────
@@ -307,7 +355,7 @@ async def _proxy_request(request: Request, path: str) -> Response:
 
     # Build headers (strip auth, hop-by-hop)
     headers = dict(request.headers)
-    for h in ("host", "authorization", "connection", "transfer-encoding"):
+    for h in ("host", "authorization", "connection", "transfer-encoding", "x-auth"):
         headers.pop(h, None)
 
     body = await request.body()
@@ -404,9 +452,24 @@ async def _cleanup_loop():
     while True:
         try:
             await asyncio.sleep(60)
-            count = await store.cleanup_expired()
-            if count:
-                logger.info("Cleaned up %d expired sessions", count)
+            approved_expired, pending_expired = await store.cleanup_expired()
+            total = approved_expired + pending_expired
+            if total:
+                logger.info(
+                    "Cleanup: %d approved expired, %d pending expired",
+                    approved_expired, pending_expired,
+                )
+                # Notify owner via Telegram about expired sessions
+                if bot and approved_expired:
+                    await bot.notify(
+                        f"⏰ *Session Cleanup*\n\n"
+                        f"{approved_expired} approved session(s) expired (TTL reached)."
+                    )
+                if bot and pending_expired:
+                    await bot.notify(
+                        f"⏰ *Stale Requests Cleaned*\n\n"
+                        f"{pending_expired} pending request(s) expired (unanswered >10 min)."
+                    )
         except asyncio.CancelledError:
             break
         except Exception:
@@ -414,6 +477,17 @@ async def _cleanup_loop():
 
 
 # ── Entrypoint ─────────────────────────────────────────────
+
+def _suppress_httpx_token_logging():
+    """Suppress httpx INFO logs that leak the bot token in URLs.
+
+    httpx logs every request URL at INFO level, which includes the
+    Telegram bot token in ``https://api.telegram.org/bot<TOKEN>/...``.
+    We raise httpx's log level to WARNING so tokens stay out of journald.
+    """
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 
 def main():
     """Run the auth gateway with uvicorn."""
@@ -424,6 +498,8 @@ def main():
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
         stream=sys.stderr,
     )
+
+    _suppress_httpx_token_logging()
 
     cfg = AuthGatewayConfig()
     uvicorn.run(

@@ -134,6 +134,42 @@ class TelegramAuthBot:
         )
         await self._edit_message(session.telegram_message_id, text)
 
+    # ── X-Auth connection alert ─────────────────────────────
+
+    async def send_connection_alert(
+        self,
+        connection_id: str,
+        client_ip: str,
+        user_agent: str,
+        path: str,
+    ) -> int | None:
+        """Send a new-connection alert with a Terminate button.
+
+        Returns the Telegram message_id, or None on failure.
+        """
+        text = (
+            f"🔌 *New MCP Connection*\n\n"
+            f"*IP:* `{client_ip}`\n"
+            f"*Agent:* `{_trunc(user_agent or '-', 80)}`\n"
+            f"*Path:* `{path}`\n"
+            f"*ID:* `{connection_id}`"
+        )
+        keyboard = {
+            "inline_keyboard": [[
+                {"text": "❌ Terminate", "callback_data": f"terminate:{connection_id}"},
+            ]]
+        }
+        result = await self._request(
+            "sendMessage",
+            chat_id=self.owner_chat_id,
+            text=text,
+            parse_mode="Markdown",
+            reply_markup=keyboard,
+        )
+        if result:
+            return result["message_id"]
+        return None
+
     # ── Notification helpers ────────────────────────────────
 
     async def notify(self, text: str) -> None:
@@ -157,9 +193,13 @@ class TelegramAuthBot:
             "setMyCommands",
             commands=[
                 {"command": "sessions", "description": "List active MCP sessions"},
+                {"command": "pending", "description": "List pending approval requests"},
                 {"command": "revoke", "description": "Revoke a session: /revoke <id>"},
                 {"command": "revokeall", "description": "Revoke all active sessions"},
+                {"command": "audit", "description": "Recent audit log: /audit [count]"},
+                {"command": "connections", "description": "List active X-Auth connections"},
                 {"command": "status", "description": "Gateway health check"},
+                {"command": "help", "description": "Show available commands"},
             ],
         )
 
@@ -218,13 +258,23 @@ class TelegramAuthBot:
 
         if text.startswith("/sessions"):
             await self._cmd_sessions()
+        elif text.startswith("/pending"):
+            await self._cmd_pending()
         elif text.startswith("/revoke "):
             arg = text.split(maxsplit=1)[1].strip()
             await self._cmd_revoke(arg)
         elif text.startswith("/revokeall"):
             await self._cmd_revokeall()
+        elif text.startswith("/audit"):
+            parts = text.split(maxsplit=1)
+            count = int(parts[1].strip()) if len(parts) > 1 and parts[1].strip().isdigit() else 15
+            await self._cmd_audit(count)
+        elif text.startswith("/connections"):
+            await self._cmd_connections()
         elif text.startswith("/status"):
             await self._cmd_status()
+        elif text.startswith("/help"):
+            await self._cmd_help()
 
     # ── Callback handler ────────────────────────────────────
 
@@ -255,6 +305,20 @@ class TelegramAuthBot:
                 await self._answer_callback(cq_id, "Denied")
             except ValueError as e:
                 await self._answer_callback(cq_id, str(e))
+
+        elif data.startswith("terminate:"):
+            connection_id = data.split(":", 1)[1]
+            found = await self.store.terminate_x_auth_connection(connection_id)
+            if found:
+                msg_id = cq.get("message", {}).get("message_id")
+                if msg_id:
+                    await self._edit_message(
+                        msg_id,
+                        f"🚫 Connection `{connection_id}` terminated by operator",
+                    )
+                await self._answer_callback(cq_id, f"Terminated {connection_id}")
+            else:
+                await self._answer_callback(cq_id, f"Connection {connection_id} not found")
 
     async def _answer_callback(self, cq_id: str, text: str) -> None:
         await self._request("answerCallbackQuery", callback_query_id=cq_id, text=text)
@@ -294,14 +358,82 @@ class TelegramAuthBot:
         count = await self.store.revoke_all()
         await self.notify(f"✅ Revoked {count} active session(s).")
 
+    async def _cmd_pending(self) -> None:
+        pending = await self.store.list_pending()
+        if not pending:
+            await self.notify("No pending approval requests.")
+            return
+
+        lines = [f"*Pending Requests ({len(pending)}):*\n"]
+        for s in pending:
+            age_s = int(time.time() - s.created_at)
+            age_m = age_s // 60
+            ts = datetime.fromtimestamp(s.created_at, tz=timezone.utc)
+            lines.append(
+                f"• `{s.request_id}` — `{s.client_ip}`\n"
+                f"  Path: `{s.requested_path}`\n"
+                f"  Age: {age_m}m {age_s % 60}s | {ts:%H:%M:%S UTC}"
+            )
+        await self.notify("\n".join(lines))
+
+    async def _cmd_audit(self, count: int = 15) -> None:
+        count = min(count, 50)  # cap at 50
+        entries = await self.store.recent_audit(limit=count)
+        if not entries:
+            await self.notify("No audit log entries.")
+            return
+
+        lines = [f"*Audit Log (last {len(entries)}):*\n"]
+        for e in entries:
+            ts = datetime.fromtimestamp(e["ts"], tz=timezone.utc)
+            rid = e["request_id"] or "-"
+            ip = e["client_ip"] or "-"
+            detail = e["detail"] or ""
+            lines.append(
+                f"• `{ts:%m-%d %H:%M:%S}` *{e['event']}* "
+                f"rid=`{rid}` ip=`{ip}` {detail}"
+            )
+        await self.notify("\n".join(lines))
+
+    async def _cmd_connections(self) -> None:
+        conns = await self.store.get_active_x_auth_connections()
+        if not conns:
+            await self.notify("No active X-Auth connections.")
+            return
+
+        lines = [f"*Active X-Auth Connections ({len(conns)}):*\n"]
+        for c in conns:
+            first = datetime.fromtimestamp(c["first_seen"], tz=timezone.utc)
+            lines.append(
+                f"• `{c['id']}` — `{c['client_ip']}`\n"
+                f"  Requests: {c['request_count']} | First: {first:%H:%M:%S UTC}\n"
+                f"  UA: `{_trunc(c['user_agent'] or '-', 50)}`"
+            )
+        await self.notify("\n".join(lines))
+
     async def _cmd_status(self) -> None:
         active = await self.store.list_active()
         pending = await self.store.total_pending()
+        x_auth_conns = await self.store.get_active_x_auth_connections()
         await self.notify(
             f"*MCP Auth Gateway Status*\n\n"
             f"Active sessions: {len(active)}\n"
             f"Pending requests: {pending}\n"
+            f"Active X-Auth connections: {len(x_auth_conns)}\n"
             f"Uptime: running"
+        )
+
+    async def _cmd_help(self) -> None:
+        await self.notify(
+            "*MCP Auth Gateway Commands*\n\n"
+            "/sessions — List active approved sessions\n"
+            "/pending — List pending approval requests\n"
+            "/revoke <id> — Revoke a specific session (request\\_id or session\\_id)\n"
+            "/revokeall — Revoke all active sessions\n"
+            "/audit \\[N] — Show last N audit log entries (default 15, max 50)\n"
+            "/connections — List active X-Auth connections\n"
+            "/status — Gateway health summary\n"
+            "/help — This message"
         )
 
 
