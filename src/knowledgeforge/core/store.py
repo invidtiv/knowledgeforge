@@ -41,6 +41,7 @@ class VectorStore:
         self.persist_dir = persist_dir
         self._client = None
         self._collections: dict = {}
+        self._broken_collections: set = set()
         self._lock = threading.RLock()
         logger.debug(f"VectorStore initialized with persist_dir={persist_dir}")
 
@@ -85,7 +86,7 @@ class VectorStore:
                             name=name,
                             metadata={"hnsw:space": "cosine"}  # Cosine similarity for semantic search
                         )
-                        logger.info(f"Collection '{name}' ready (count: {self._collections[name].count()})")
+                        logger.info(f"Collection '{name}' ready")
                     except Exception as e:
                         logger.error(f"Failed to get/create collection '{name}': {e}")
                         raise RuntimeError(f"Collection access failed for '{name}': {e}") from e
@@ -324,18 +325,25 @@ class VectorStore:
     def count(self, collection: str) -> int:
         """Get the number of documents in a collection.
 
+        Returns -1 if the collection is inaccessible (e.g. corrupted
+        ChromaDB compaction logs that trigger SIGSEGV).
+
         Args:
             collection: Collection name
 
         Returns:
-            Number of documents in the collection
+            Number of documents in the collection, or -1 on failure
         """
         try:
             col = self._get_collection(collection)
-            return col.count()
+            if collection in self._broken_collections:
+                return -1
+            result = col.get(include=[])
+            return len(result.get("ids", []))
         except Exception as e:
             logger.error(f"Failed to count collection '{collection}': {e}")
-            raise RuntimeError(f"Count operation failed for '{collection}': {e}") from e
+            self._broken_collections.add(collection)
+            return -1
 
     def delete_by_file_path(self, collection: str, file_path: str) -> None:
         """Delete all chunks associated with a specific file path.

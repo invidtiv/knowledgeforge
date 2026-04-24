@@ -1,5 +1,7 @@
 """Pydantic data models for KnowledgeForge."""
 
+import hashlib
+
 from pydantic import BaseModel, Field, model_validator
 from uuid import uuid4
 from datetime import datetime, timezone
@@ -469,6 +471,162 @@ class SemanticRecord(BaseModel):
             created_at=metadata.get("created_at", datetime.now(timezone.utc).isoformat()),
             updated_at=metadata.get("updated_at", datetime.now(timezone.utc).isoformat()),
         )
+
+
+class MemoryCard(BaseModel):
+    """Atomic extracted memory from past conversations or handoff sources.
+
+    Memory cards deliberately separate historical evidence from current truth.
+    Old conversations should normally land as active_unverified or historical,
+    then be promoted only after repo or user confirmation.
+    """
+
+    card_id: str = ""
+    type: str = "project_context"
+    project: str = "unknown"
+    title: str
+    body: str
+    why: str = ""
+    status: str = "active_unverified"
+    confidence: str = "medium"  # high | medium | low
+    source_type: str = "conversation"
+    source_conversation: str = ""
+    source_date: str = ""
+    source_path: str = ""
+    source_lines: str = ""
+    current_truth: bool = False
+    needs_repo_confirmation: bool = True
+    tags: list[str] = Field(default_factory=list)
+    supersedes: list[str] = Field(default_factory=list)
+    superseded_by: list[str] = Field(default_factory=list)
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+    @model_validator(mode="after")
+    def normalize_card(self) -> "MemoryCard":
+        """Normalize list fields and assign a stable id when absent."""
+        self.type = (self.type or "project_context").strip()
+        self.project = (self.project or "unknown").strip()
+        self.status = (self.status or "active_unverified").strip()
+        self.confidence = (self.confidence or "medium").strip().lower()
+        if self.confidence not in {"high", "medium", "low"}:
+            self.confidence = "medium"
+
+        self.tags = sorted({t.strip() for t in self.tags if t and t.strip()})
+        self.supersedes = sorted({s.strip() for s in self.supersedes if s and s.strip()})
+        self.superseded_by = sorted({s.strip() for s in self.superseded_by if s and s.strip()})
+
+        if not self.card_id:
+            self.card_id = f"mem_{self.content_hash()[:24]}"
+        return self
+
+    def content_hash(self) -> str:
+        """Stable hash used for dedupe across repeated extraction runs."""
+        raw = "\n".join(
+            [
+                self.type,
+                self.project,
+                self.title.strip(),
+                self.body.strip(),
+                self.why.strip(),
+                self.source_conversation.strip(),
+                self.source_date.strip(),
+            ]
+        )
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def trust_level(self) -> str:
+        """Map card validity to the existing search trust weighting model."""
+        if self.current_truth or self.status in {"active_verified", "verified", "current"}:
+            return "T2"
+        if self.status in {"active", "active_unverified", "resolved", "failed", "open_unverified"}:
+            return "T3"
+        return "T4"
+
+    def confidence_score(self) -> float:
+        return {"high": 0.9, "medium": 0.65, "low": 0.35}.get(self.confidence, 0.65)
+
+    def to_embedding_text(self) -> str:
+        """Build the document stored in ChromaDB and keyword FTS."""
+        parts = [
+            f"Project: {self.project}",
+            f"Type: {self.type}",
+            f"Title: {self.title}",
+            f"Status: {self.status}",
+            f"Confidence: {self.confidence}",
+            f"Current truth: {self.current_truth}",
+        ]
+        if self.tags:
+            parts.append(f"Tags: {', '.join(self.tags)}")
+        if self.body:
+            parts.append(f"Body: {self.body}")
+        if self.why:
+            parts.append(f"Why: {self.why}")
+        if self.source_conversation or self.source_date:
+            source = " ".join(
+                p for p in [self.source_conversation, self.source_date] if p
+            )
+            parts.append(f"Source: {source}")
+        return "\n".join(parts)
+
+    def to_metadata(self) -> dict:
+        """Convert to ChromaDB-safe metadata."""
+        metadata = {
+            "memory_card_id": self.card_id,
+            "card_id": self.card_id,
+            "type": self.type,
+            "category": self.type,
+            "project": self.project,
+            "project_name": self.project,
+            "title": self.title,
+            "status": self.status,
+            "confidence": self.confidence_score(),
+            "confidence_label": self.confidence,
+            "source_type": self.source_type,
+            "current_truth": self.current_truth,
+            "needs_repo_confirmation": self.needs_repo_confirmation,
+            "trust_level": self.trust_level(),
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "content_hash": self.content_hash(),
+            "file_path": self.source_path or f"memory://{self.card_id}",
+            "source_file": self.source_path or f"memory://{self.card_id}",
+            "start_line": self._first_source_line(),
+            "end_line": self._last_source_line(),
+        }
+        if self.source_conversation:
+            metadata["source_conversation"] = self.source_conversation
+        if self.source_date:
+            metadata["source_date"] = self.source_date
+        if self.source_path:
+            metadata["source_path"] = self.source_path
+        if self.source_lines:
+            metadata["source_lines"] = self.source_lines
+        if self.tags:
+            metadata["tags"] = ",".join(self.tags)
+            metadata["frontmatter_tags"] = ",".join(self.tags)
+        if self.supersedes:
+            metadata["supersedes"] = ",".join(self.supersedes)
+        if self.superseded_by:
+            metadata["superseded_by"] = ",".join(self.superseded_by)
+        return metadata
+
+    def _first_source_line(self) -> int:
+        nums = self._source_line_numbers()
+        return min(nums) if nums else 0
+
+    def _last_source_line(self) -> int:
+        nums = self._source_line_numbers()
+        return max(nums) if nums else 0
+
+    def _source_line_numbers(self) -> list[int]:
+        raw = self.source_lines.replace(";", ",").replace("-", ",")
+        nums = []
+        for part in raw.split(","):
+            part = part.strip()
+            if part.isdigit():
+                nums.append(int(part))
+        return nums
 
 
 class ProjectInfo(BaseModel):

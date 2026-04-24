@@ -1,6 +1,7 @@
 """FastAPI REST server for KnowledgeForge."""
 import time
 import logging
+from datetime import datetime, timezone
 from typing import Optional
 from contextlib import asynccontextmanager
 
@@ -8,6 +9,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from knowledgeforge.bridges.ob1_bridge import OB1Bridge
 from knowledgeforge.config import KnowledgeForgeConfig
 from knowledgeforge.core.engine import KnowledgeForgeEngine
 from knowledgeforge.core.models import (
@@ -17,6 +19,7 @@ from knowledgeforge.core.models import (
     IngestResult,
     ProjectInfo,
     SemanticRecord,
+    MemoryCard,
 )
 
 logger = logging.getLogger(__name__)
@@ -88,6 +91,27 @@ class ConversationSearchRequest(BaseModel):
     min_score: float = 0.0
 
 
+class ConversationSessionSummary(BaseModel):
+    """Grouped summary for one indexed conversation session."""
+    session_id: str
+    project: str = ""
+    source_agent: str = "unknown"
+    exchange_count: int = 0
+    first_timestamp: str = ""
+    last_timestamp: str = ""
+    archive_path: str = ""
+    tool_names: list[str] = Field(default_factory=list)
+    summary_hint: str = ""
+    category: str = ""
+    intent: str = ""
+
+
+class ConversationSessionListResponse(BaseModel):
+    """List of grouped conversation sessions."""
+    total_sessions: int = 0
+    sessions: list[ConversationSessionSummary] = Field(default_factory=list)
+
+
 class SemanticRecordRequest(BaseModel):
     """Request model for curated semantic memory records."""
     title: str
@@ -102,6 +126,33 @@ class SemanticRecordRequest(BaseModel):
     reviewed_at: str = ""
     superseded_by: str = ""
     confidence: float = 0.9
+
+
+class MemoryCardRequest(BaseModel):
+    """Request model for structured extracted memory cards."""
+    type: str = "project_context"
+    project: str = "unknown"
+    title: str
+    body: str
+    why: str = ""
+    status: str = "active_unverified"
+    confidence: str = "medium"
+    source_type: str = "conversation"
+    source_conversation: str = ""
+    source_date: str = ""
+    source_path: str = ""
+    source_lines: str = ""
+    current_truth: bool = False
+    needs_repo_confirmation: bool = True
+    tags: list[str] = Field(default_factory=list)
+    supersedes: list[str] = Field(default_factory=list)
+    superseded_by: list[str] = Field(default_factory=list)
+
+
+class MemoryCardStatusUpdateRequest(BaseModel):
+    """Update memory card lifecycle state."""
+    status: str
+    current_truth: Optional[bool] = None
 
 
 class DiscoveryPromotionRequest(BaseModel):
@@ -120,6 +171,42 @@ class SemanticBootstrapRequest(BaseModel):
     """Bootstrap semantic coverage for a project."""
     project: str
     limit: int = 20
+
+
+class SemanticReplaceRequest(BaseModel):
+    """Replace a semantic record: create new + supersede old."""
+    title: str
+    content: str
+    project: str = ""
+    tags: list[str] = []
+    confidence: float = 0.9
+
+
+class OB1BridgeConfigRequest(BaseModel):
+    """Configuration for OB1 bridge connection."""
+    supabase_url: str
+    supabase_key: str
+    access_key: str = ""
+
+
+class OB1ExportRequest(BaseModel):
+    """Request to export KF data to OB1."""
+    supabase_url: str
+    supabase_key: str
+    access_key: str = ""
+    skip_unconfirmed: bool = True
+    project: str = ""
+    limit: int = 50
+
+
+class OB1ImportRequest(BaseModel):
+    """Request to import OB1 thoughts into KF."""
+    supabase_url: str
+    supabase_key: str
+    access_key: str = ""
+    limit: int = 50
+    since: str = ""
+    type_filter: str = ""
 
 
 @asynccontextmanager
@@ -333,6 +420,121 @@ async def update_semantic_record_status(record_type: str, record_id: str, reques
     return {"updated": True, "record_id": record_id, "record_type": record_type, "status": request.status}
 
 
+@app.post("/api/v1/semantic-records/{record_type}/{record_id}/mark-reviewed")
+async def mark_semantic_reviewed(record_type: str, record_id: str):
+    """Touch reviewed_at timestamp on a semantic record without changing status."""
+    engine = get_engine()
+    updated = engine.mark_semantic_reviewed(record_id, record_type)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Semantic record not found")
+    return {"marked_reviewed": True, "record_id": record_id, "record_type": record_type}
+
+
+@app.post("/api/v1/semantic-records/{record_type}/{record_id}/replace")
+async def replace_semantic_record(record_type: str, record_id: str, request: SemanticReplaceRequest):
+    """Create a new record and supersede the old one in a single step."""
+    engine = get_engine()
+    new_record, old_ok = engine.replace_semantic_record(
+        old_record_id=record_id,
+        record_type=record_type,
+        new_title=request.title,
+        new_content=request.content,
+        new_project=request.project,
+        new_tags=request.tags,
+        new_confidence=request.confidence,
+    )
+    return {
+        "new_record_id": new_record.record_id,
+        "new_title": new_record.title,
+        "old_record_superseded": old_ok,
+    }
+
+
+@app.get("/api/v1/semantic-records/stale")
+async def get_stale_records(
+    stale_days: int = Query(30, description="Days since last review to consider stale"),
+    project: Optional[str] = Query(None, description="Filter by project"),
+):
+    """Return active semantic records that are stale (never reviewed or not reviewed within N days)."""
+    engine = get_engine()
+    stale = engine.get_stale_records(stale_days=stale_days, project=project)
+    return [
+        {
+            "record_id": r.record_id,
+            "record_type": r.record_type,
+            "title": r.title,
+            "project": r.project,
+            "created_at": r.created_at,
+            "reviewed_at": r.reviewed_at or "never",
+        }
+        for r in stale
+    ]
+
+
+@app.post("/api/v1/memory-cards", response_model=MemoryCard)
+async def create_memory_card(request: MemoryCardRequest):
+    """Create a structured extracted memory card."""
+    engine = get_engine()
+    card = MemoryCard(**request.model_dump())
+    return engine.store_memory_card(card)
+
+
+@app.get("/api/v1/memory-cards", response_model=list[MemoryCard])
+async def list_memory_cards(
+    project: Optional[str] = Query(None, description="Filter by project"),
+    memory_type: Optional[str] = Query(None, alias="type", description="Filter by memory type"),
+    status: Optional[str] = Query(None, description="Filter by lifecycle status"),
+    current_truth: Optional[bool] = Query(None, description="Filter by current-truth flag"),
+    limit: int = Query(100, description="Max cards to return"),
+):
+    """List structured memory cards from the SQLite registry."""
+    engine = get_engine()
+    return engine.list_memory_cards(
+        project=project,
+        memory_type=memory_type,
+        status=status,
+        current_truth=current_truth,
+        limit=limit,
+    )
+
+
+@app.post("/api/v1/memory-cards/search", response_model=SearchResponse)
+async def search_memory_cards(request: SearchRequest):
+    """Search extracted memory cards only."""
+    engine = get_engine()
+    memory_type = None
+    if request.collections and len(request.collections) == 1:
+        memory_type = request.collections[0]
+    return engine.search_memory_cards(
+        query=request.query,
+        project=request.project,
+        memory_type=memory_type,
+        max_results=request.max_results if request.n_results is None else request.n_results,
+        min_score_threshold=request.min_score_threshold if request.min_score is None else request.min_score,
+    )
+
+
+@app.patch("/api/v1/memory-cards/{card_id}", response_model=MemoryCard)
+async def update_memory_card_status(card_id: str, request: MemoryCardStatusUpdateRequest):
+    """Promote, verify, archive, or otherwise update a memory card status."""
+    engine = get_engine()
+    card = engine.update_memory_card_status(
+        card_id,
+        request.status,
+        current_truth=request.current_truth,
+    )
+    if not card:
+        raise HTTPException(status_code=404, detail="Memory card not found")
+    return card
+
+
+@app.get("/api/v1/memory-cards/audit")
+async def memory_card_audit():
+    """Return structured memory counts by status/type/project."""
+    engine = get_engine()
+    return engine.get_memory_audit()
+
+
 @app.get("/api/v1/discoveries")
 async def list_discoveries(
     project: Optional[str] = Query(None, description="Filter by project name"),
@@ -437,6 +639,48 @@ async def semantic_audit():
     return engine.get_semantic_audit()
 
 
+@app.get("/api/v1/queue/status")
+async def queue_status():
+    """Return ingestion queue status summary and per-project details."""
+    import time as _time
+    from knowledgeforge.ingest_queue import load_state, _state_path
+
+    config = get_engine().config
+    state_path = _state_path(config)
+
+    if not state_path.exists():
+        return {"status": "no_queue", "message": "No queue state file found."}
+
+    state = load_state(config)
+    projects = state.get("projects", [])
+    counts = {"pending": 0, "running": 0, "retry": 0, "done": 0}
+    for p in projects:
+        s = p.get("status", "pending")
+        counts[s] = counts.get(s, 0) + 1
+
+    # Error frequency
+    from collections import Counter
+    error_counter = Counter()
+    for p in projects:
+        err = (p.get("last_error") or "").strip()
+        if err:
+            first_line = err.split(";")[0].split("\n")[0][:120]
+            error_counter[first_line] += 1
+
+    last_success = max((p.get("last_success_at") or 0 for p in projects), default=0)
+    last_attempt = max((p.get("last_attempt_at") or 0 for p in projects), default=0)
+
+    return {
+        "total_projects": len(projects),
+        "counts": counts,
+        "progress_pct": round(counts["done"] / len(projects) * 100, 1) if projects else 0,
+        "last_success_at": last_success or None,
+        "last_attempt_at": last_attempt or None,
+        "top_errors": [{"error": e, "count": c} for e, c in error_counter.most_common(10)],
+        "projects": projects,
+    }
+
+
 @app.get("/api/v1/stats")
 async def get_stats():
     """
@@ -454,22 +698,29 @@ async def get_stats():
     return engine.get_stats()
 
 
+@app.get("/health")
 @app.get("/api/v1/health")
 async def health():
     """
-    Health check endpoint.
+    Lightweight health check endpoint.
 
     Returns:
-    - status: "ok" if system is healthy
-    - collections: Collection statistics
+    - status: "ok" if the API process is alive and engine is initialised
     - uptime_seconds: Server uptime in seconds
+
+    NOTE: This intentionally does NOT call get_stats() or touch ChromaDB
+    collections because ChromaDB's Rust backend can SIGSEGV on .count()
+    when the database is in a bad state, which kills the entire API process.
+    Use /api/v1/stats for full collection statistics.
     """
-    engine = get_engine()
-    stats = engine.get_stats()
     uptime = time.time() - _start_time
+    try:
+        engine = get_engine()
+        engine_ok = engine is not None
+    except Exception:
+        engine_ok = False
     return {
-        "status": "ok",
-        "collections": stats.get("collections", {}),
+        "status": "ok" if engine_ok else "degraded",
         "uptime_seconds": round(uptime, 2)
     }
 
@@ -561,6 +812,25 @@ async def conversation_stats():
     return engine.get_conversation_stats()
 
 
+@app.get("/api/v1/conversations/sessions", response_model=ConversationSessionListResponse)
+async def list_conversation_sessions(
+    project: Optional[str] = Query(None, description="Exact conversation project filter"),
+    source_agent: Optional[str] = Query(None, description="Agent filter: claude/codex/gemini"),
+    after: Optional[str] = Query(None, description="Only include sessions after YYYY-MM-DD"),
+    before: Optional[str] = Query(None, description="Only include sessions before YYYY-MM-DD"),
+    limit: int = Query(200, ge=1, le=1000, description="Maximum grouped sessions to return"),
+):
+    """List indexed conversation sessions grouped by session ID."""
+    engine = get_engine()
+    return engine.list_conversation_sessions(
+        project=project,
+        source_agent=source_agent,
+        after=after,
+        before=before,
+        limit=limit,
+    )
+
+
 @app.get("/api/v1/conversations/{session_id}")
 async def get_conversation(
     session_id: str,
@@ -576,6 +846,104 @@ async def get_conversation(
     engine = get_engine()
     content = engine.get_conversation(session_id, start_line, end_line)
     return {"session_id": session_id, "content": content}
+
+
+# --- OB1 Bridge Endpoints ---
+
+@app.post("/api/v1/bridge/ob1/import")
+async def import_ob1_thoughts(req: OB1ImportRequest):
+    """Import OB1 thoughts into KnowledgeForge as indexed documents."""
+    engine = get_engine()
+    bridge = OB1Bridge(req.supabase_url, req.supabase_key, req.access_key)
+
+    thoughts = bridge.fetch_ob1_thoughts(
+        limit=req.limit,
+        since=req.since or None,
+        type_filter=req.type_filter or None,
+    )
+
+    if not thoughts:
+        return {"imported": 0, "message": "No thoughts found"}
+
+    # Convert thoughts to chunks and store
+    chunks = []
+    for thought in thoughts:
+        fingerprint = bridge._content_fingerprint(thought.get("content", ""))
+        metadata = thought.get("metadata", {})
+        topics = metadata.get("topics", [])
+        project = (
+            topics[0]
+            if isinstance(topics, list) and topics
+            else "ob1"
+        )
+        chunk = Chunk(
+            chunk_id=f"ob1_thought_{thought['id']}_0",
+            content=thought["content"],
+            file_path=f"ob1://thoughts/{thought['id']}",
+            content_hash=fingerprint,
+            chunk_index=0,
+            chunk_type="thought",
+            trust_level="T3",
+            project_name=project,
+            created_at=thought.get("created_at", datetime.now(timezone.utc).isoformat()),
+            updated_at=thought.get("updated_at", datetime.now(timezone.utc).isoformat()),
+        )
+        chunks.append(chunk)
+
+    # Store in documents collection
+    engine.store.add(
+        collection="documents",
+        ids=[c.chunk_id for c in chunks],
+        documents=[c.content for c in chunks],
+        embeddings=engine._embed_for_ingest([c.content for c in chunks]),
+        metadatas=[c.to_metadata() for c in chunks],
+    )
+
+    return {"imported": len(chunks), "thought_ids": [t["id"] for t in thoughts]}
+
+
+@app.post("/api/v1/bridge/ob1/export")
+async def export_to_ob1(req: OB1ExportRequest):
+    """Export confirmed KF discoveries to OB1 as thoughts."""
+    engine = get_engine()
+    bridge = OB1Bridge(req.supabase_url, req.supabase_key, req.access_key)
+
+    discoveries = engine.get_discoveries(
+        project=req.project or None,
+        unconfirmed_only=False,
+    )
+
+    result = bridge.export_discoveries_to_ob1(
+        discoveries,
+        skip_unconfirmed=req.skip_unconfirmed,
+    )
+
+    return result
+
+
+@app.get("/api/v1/bridge/ob1/status")
+async def ob1_bridge_status(
+    supabase_url: str = Query(...),
+    supabase_key: str = Query(...),
+):
+    """Check OB1 bridge connectivity and sync status."""
+    bridge = OB1Bridge(supabase_url, supabase_key)
+
+    try:
+        thoughts = bridge.fetch_ob1_thoughts(limit=1)
+        connected = True
+        thought_count_sample = len(thoughts)
+    except Exception as exc:
+        logger.warning("OB1 connectivity check failed: %s", exc)
+        connected = False
+        thought_count_sample = 0
+
+    return {
+        "connected": connected,
+        "ob1_url": supabase_url,
+        "sample_thoughts": thought_count_sample,
+        "sync_status": bridge.sync_status(),
+    }
 
 
 def main():

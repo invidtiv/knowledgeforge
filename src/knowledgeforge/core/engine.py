@@ -8,23 +8,29 @@ coordinates the vector store, embedder, parsers, and discovery system.
 import time
 import logging
 import os
+from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Optional
+from typing import Any, Callable, Optional
 
 from knowledgeforge.config import KnowledgeForgeConfig
 from knowledgeforge.core.embedder import Embedder
 from knowledgeforge.core.keyword_index import KeywordIndex
+from knowledgeforge.core.memory_registry import MemoryRegistry
 from knowledgeforge.core.store import VectorStore
 from knowledgeforge.core.models import (
     Chunk, Discovery, SearchResult, SearchResponse, IngestResult, ProjectInfo,
-    SearchSnippet, SemanticRecord,
+    SearchSnippet, SemanticRecord, MemoryCard,
     ConversationExchange
 )
 from knowledgeforge.ingestion.obsidian import ObsidianParser
 from knowledgeforge.ingestion.code import CodeParser
 from knowledgeforge.discovery.manager import DiscoveryManager
 from knowledgeforge.discovery.promoter import DiscoveryPromoter
+from knowledgeforge.ingestion.chunker import compute_file_hash
+from knowledgeforge.ingestion.ob1 import OB1Parser
+from knowledgeforge.ingestion.fingerprint import content_fingerprint
+from knowledgeforge.ingestion.enrichment import MetadataEnricher
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +61,16 @@ class KnowledgeForgeEngine:
             config: KnowledgeForge configuration instance
         """
         self.config = config
-        self.embedder = Embedder(config.embedding_model, config.embedding_device)
+        self.embedder = Embedder(
+            config.embedding_model,
+            config.embedding_device,
+            provider=config.embedding_provider,
+            openai_api_key=config.openai_api_key,
+            openrouter_api_key=config.openrouter_api_key,
+        )
         self.store = VectorStore(config.chroma_persist_dir)
         self.keyword_index = KeywordIndex(config.keyword_index_path)
+        self.memory_registry = MemoryRegistry(config.memory_registry_path)
 
         # Initialize parsers only if paths are configured
         self.obsidian_parser = None
@@ -65,6 +78,23 @@ class KnowledgeForgeEngine:
             self.obsidian_parser = ObsidianParser(config.obsidian_vault_path, config)
 
         self.code_parser = CodeParser(config)
+
+        self.ob1_parser = None
+        if getattr(config, 'ob1_supabase_url', None) and getattr(config, 'ob1_supabase_key', None):
+            self.ob1_parser = OB1Parser(
+                supabase_url=config.ob1_supabase_url,
+                supabase_key=config.ob1_supabase_key,
+                access_key=getattr(config, 'ob1_access_key', ''),
+            )
+
+        self.metadata_enricher = None
+        enrichment_key = getattr(config, 'enrichment_api_key', None)
+        if enrichment_key:
+            self.metadata_enricher = MetadataEnricher(
+                api_key=enrichment_key,
+                model=getattr(config, 'enrichment_model', 'gpt-4o-mini'),
+            )
+
         self.discovery_manager = DiscoveryManager(self.store, self.embedder, config)
 
         self.discovery_promoter = None
@@ -83,6 +113,7 @@ class KnowledgeForgeEngine:
             self.config.facts_collection,
             self.config.runbooks_collection,
             self.config.project_overviews_collection,
+            self.config.memory_cards_collection,
             self.config.docs_collection,
             self.config.code_collection,
             self.config.discoveries_collection,
@@ -119,6 +150,141 @@ class KnowledgeForgeEngine:
                     exc,
                 )
 
+    def _embed_for_ingest(self, texts: list[str]) -> list[list[float]]:
+        """Embed documents using the configured ingest batch size."""
+        if not texts:
+            return []
+
+        batch_size = max(1, int(self.config.embedding_batch_size or 1))
+        return self.embedder.embed_batch(
+            texts,
+            batch_size=batch_size,
+            is_query=False,
+        )
+
+    def _should_ignore_project_path(
+        self,
+        path: Path,
+        project_root: Path,
+        ignore_patterns: list[str],
+    ) -> bool:
+        """Check whether a project-relative path should be excluded from ingest."""
+        try:
+            rel_path = path.relative_to(project_root)
+        except ValueError:
+            rel_path = path
+
+        rel_norm = str(rel_path).replace(os.sep, "/")
+        rel_parts = {part for part in rel_path.parts if part}
+        name = path.name
+
+        for pattern in ignore_patterns:
+            normalized = str(pattern).strip().replace("\\", "/").strip("/")
+            if not normalized:
+                continue
+
+            if "/" in normalized:
+                if rel_norm == normalized or rel_norm.startswith(f"{normalized}/"):
+                    return True
+                continue
+
+            if normalized == name or normalized in rel_parts:
+                return True
+
+        return False
+
+    def _scan_project_files(self, project_path: str, project_name: str) -> dict[str, list[str]]:
+        """Scan a project once and return sorted markdown/code file lists."""
+        root = Path(project_path)
+        override = self.config.get_project_ingest_override(project_name)
+        ignore_patterns = list(self.config.ignore_patterns) + list(override.ignore_patterns)
+        obsidian_exts = set(self.config.obsidian_extensions)
+        code_exts = set(self.config.code_extensions)
+
+        markdown_files: list[str] = []
+        code_files: list[str] = []
+
+        for dirpath, dirnames, filenames in os.walk(project_path):
+            current = Path(dirpath)
+            dirnames[:] = sorted(
+                d
+                for d in dirnames
+                if not self._should_ignore_project_path(current / d, root, ignore_patterns)
+            )
+
+            for fname in sorted(filenames):
+                file_path = current / fname
+                if self._should_ignore_project_path(file_path, root, ignore_patterns):
+                    continue
+
+                ext = file_path.suffix.lower()
+                if not override.skip_markdown and ext in obsidian_exts:
+                    markdown_files.append(str(file_path))
+                elif not override.skip_code and ext in code_exts:
+                    code_files.append(str(file_path))
+
+        return {
+            "markdown": markdown_files,
+            "code": code_files,
+        }
+
+    def _project_markdown_store_path(self, file_path: str) -> str:
+        """Return the stored docs-collection path for a project markdown file."""
+        if not self.obsidian_parser:
+            return file_path
+        return os.path.relpath(file_path, self.obsidian_parser.vault_path)
+
+    def _store_chunk_list(
+        self,
+        collection: str,
+        file_chunk_list: list[Chunk],
+        existing_hashes: dict[str, str] | None = None,
+    ) -> IngestResult:
+        """Embed and upsert one file's chunk list into the target collection."""
+        if not file_chunk_list:
+            return IngestResult(
+                files_processed=0,
+                files_skipped=1,
+                chunks_created=0,
+                errors=[],
+                duration_seconds=0,
+            )
+
+        file_path = file_chunk_list[0].file_path
+        file_hash = file_chunk_list[0].content_hash
+
+        if existing_hashes and file_path in existing_hashes:
+            if existing_hashes[file_path] == file_hash:
+                return IngestResult(
+                    files_processed=0,
+                    files_skipped=1,
+                    chunks_created=0,
+                    errors=[],
+                    duration_seconds=0,
+                )
+
+            self.store.delete_by_file_path(collection, file_path)
+            self.keyword_index.delete_by_file_path(collection, file_path)
+
+        contents = [chunk.content for chunk in file_chunk_list]
+        ids = [chunk.chunk_id for chunk in file_chunk_list]
+        metadatas = [chunk.to_metadata() for chunk in file_chunk_list]
+        embeddings = self._embed_for_ingest(contents)
+
+        self.store.add(collection, ids, contents, embeddings, metadatas)
+        self.keyword_index.upsert_chunks(collection, ids, contents, metadatas)
+
+        if existing_hashes is not None:
+            existing_hashes[file_path] = file_hash
+
+        return IngestResult(
+            files_processed=1,
+            files_skipped=0,
+            chunks_created=len(file_chunk_list),
+            errors=[],
+            duration_seconds=0,
+        )
+
     # === SEARCH ===
 
     def search(
@@ -149,6 +315,7 @@ class KnowledgeForgeEngine:
                 self.config.facts_collection,
                 self.config.runbooks_collection,
                 self.config.project_overviews_collection,
+                self.config.memory_cards_collection,
                 self.config.docs_collection,
                 self.config.code_collection,
                 self.config.discoveries_collection,
@@ -249,7 +416,10 @@ class KnowledgeForgeEngine:
         for item in merged.values():
             metadata = item["metadata"] or {}
             status = metadata.get("status", "active")
-            if status != "active":
+            if item["collection"] == self.config.memory_cards_collection:
+                if status in {"superseded", "deprecated", "cancelled"}:
+                    continue
+            elif status != "active":
                 continue
 
             trust_level = str(metadata.get("trust_level", "T4") or "T4")
@@ -259,6 +429,22 @@ class KnowledgeForgeEngine:
                 "T3": 0.85,
                 "T4": 0.70,
             }.get(trust_level, 0.70)
+
+            if item["collection"] == self.config.memory_cards_collection:
+                trust_boost *= {
+                    "active_verified": 1.00,
+                    "verified": 1.00,
+                    "current": 1.00,
+                    "active": 0.95,
+                    "resolved": 0.90,
+                    "failed": 0.88,
+                    "active_unverified": 0.84,
+                    "open_unverified": 0.78,
+                    "historical": 0.58,
+                    "superseded_candidate": 0.45,
+                }.get(str(status), 0.70)
+                if not bool(metadata.get("current_truth", False)):
+                    trust_boost *= 0.95
 
             final_score = ((item["vector_score"] * 0.7) + (item["keyword_score"] * 0.3)) * trust_boost
             if final_score < min_score_threshold:
@@ -309,6 +495,14 @@ class KnowledgeForgeEngine:
             if tags:
                 filters["tags"] = tags
 
+        elif collection == self.config.memory_cards_collection:
+            if project:
+                filters["project"] = project
+            if category:
+                filters["category"] = category
+            if tags:
+                filters["tags"] = tags
+
         elif collection == self.config.docs_collection:
             if project:
                 filters["project"] = project
@@ -339,11 +533,21 @@ class KnowledgeForgeEngine:
 
     def _build_where_filter(self, collection, project, tags, language, category, confirmed_only):
         """Build ChromaDB where filter based on parameters and collection type."""
-        filters = [{"status": "active"}]
+        filters = []
+        if collection != self.config.memory_cards_collection:
+            filters.append({"status": "active"})
 
         if collection in [self.config.facts_collection, self.config.runbooks_collection, self.config.project_overviews_collection]:
             if project:
                 filters.append({"project": project})
+            if tags:
+                filters.append({"tags": {"$contains": tags[0]}})
+
+        elif collection == self.config.memory_cards_collection:
+            if project:
+                filters.append({"project": project})
+            if category:
+                filters.append({"category": category})
             if tags:
                 filters.append({"tags": {"$contains": tags[0]}})
 
@@ -419,6 +623,7 @@ class KnowledgeForgeEngine:
                 self.config.facts_collection,
                 self.config.runbooks_collection,
                 self.config.project_overviews_collection,
+                self.config.memory_cards_collection,
                 self.config.docs_collection,
                 self.config.code_collection,
                 self.config.discoveries_collection,
@@ -455,6 +660,19 @@ class KnowledgeForgeEngine:
         self, file_path: str, start_line: int, line_count: int
     ) -> dict:
         """Read a small line window directly from the local filesystem."""
+        if file_path.startswith("memory://"):
+            card_id = file_path.removeprefix("memory://")
+            card = self.memory_registry.get_card(card_id)
+            if not card:
+                raise FileNotFoundError(f"Memory card not found: {file_path}")
+            return {
+                "file_path": file_path,
+                "start_line": 1,
+                "end_line": 1,
+                "line_count": 1,
+                "content": card.to_embedding_text(),
+            }
+
         resolved_path = self._resolve_context_path(file_path)
         if not resolved_path:
             raise FileNotFoundError(f"File not found: {file_path}")
@@ -628,7 +846,7 @@ class KnowledgeForgeEngine:
                     len(file_chunk_list),
                     file_path,
                 )
-                embeddings = self.embedder.embed_documents(contents)
+                embeddings = self._embed_for_ingest(contents)
                 ids = [c.chunk_id for c in file_chunk_list]
                 metadatas = [c.to_metadata() for c in file_chunk_list]
 
@@ -668,106 +886,225 @@ class KnowledgeForgeEngine:
         logger.info(f"Vault ingestion complete: {result}")
         return result
 
-    def ingest_project(self, project_path: str, project_name: str, full_reindex: bool = False) -> IngestResult:
-        """Ingest a project directory, handling BOTH markdown and code files.
-
-        Walks the directory tree recursively, classifying each file by extension:
-        - Files matching obsidian_extensions (.md) → ObsidianParser via ingest_file()
-        - Files matching code_extensions (.py, .js, etc.) → CodeParser batch ingestion
-
-        This ensures that directories containing mixed content (docs + code) are
-        fully indexed in a single call, unlike the previous behavior which only
-        processed code files and silently skipped markdown.
-
-        Args:
-            project_path: Absolute path to project directory
-            project_name: Name of the project
-            full_reindex: If True, clear this project's data and re-index
-
-        Returns:
-            IngestResult with statistics about the ingestion
-        """
-        import os as _os
-
+    def ingest_project_batch(
+        self,
+        project_path: str,
+        project_name: str,
+        *,
+        state: dict[str, Any] | None = None,
+        full_reindex: bool = False,
+        max_files: int | None = None,
+        max_chunks: int | None = None,
+        time_budget_seconds: int | None = None,
+        progress_callback: Callable[[dict[str, Any]], None] | None = None,
+    ) -> dict[str, Any]:
+        """Ingest a bounded resumable slice of a mixed markdown/code project."""
         start = time.time()
         root = Path(project_path)
 
         if not root.is_dir():
-            return IngestResult(
-                files_processed=0, files_skipped=0, chunks_created=0,
-                errors=[f"Not a directory: {project_path}"],
-                duration_seconds=0
-            )
+            return {
+                "status": "done",
+                "phase": "done",
+                "markdown_index": 0,
+                "code_index": 0,
+                "markdown_total": 0,
+                "code_total": 0,
+                "files_processed": 0,
+                "files_skipped": 0,
+                "chunks_created": 0,
+                "errors": [f"Not a directory: {project_path}"],
+                "duration_seconds": 0,
+            }
 
-        logger.info(f"Starting project ingestion: {project_name} at {project_path} (full_reindex={full_reindex})")
-
-        obsidian_exts = set(self.config.obsidian_extensions)
-        code_exts = set(self.config.code_extensions)
-        ignore_pats = set(self.config.ignore_patterns)
-
-        # Collect all files, classified by type
-        md_files: list[str] = []
-        code_files: list[str] = []
-
-        for dirpath, dirnames, filenames in _os.walk(project_path):
-            current = Path(dirpath)
-            # Prune ignored directories in-place
-            dirnames[:] = [
-                d for d in dirnames
-                if d not in ignore_pats
-            ]
-            for fname in filenames:
-                fpath = current / fname
-                ext = fpath.suffix.lower()
-                name = fpath.name
-                if name in ignore_pats:
-                    continue
-                if ext in obsidian_exts:
-                    md_files.append(str(fpath))
-                elif ext in code_exts:
-                    code_files.append(str(fpath))
-
-        logger.info(f"Found {len(md_files)} markdown + {len(code_files)} code files in {project_path}")
-
-        total_processed = 0
-        total_skipped = 0
-        total_chunks = 0
-        all_errors: list[str] = []
-
-        # --- Phase 1: Ingest markdown files individually via ingest_file() ---
-        if md_files:
-            logger.info(f"Phase 1: Ingesting {len(md_files)} markdown files")
-            for fpath in md_files:
-                try:
-                    r = self.ingest_file(fpath)
-                    total_processed += r.files_processed
-                    total_skipped += r.files_skipped
-                    total_chunks += r.chunks_created
-                    all_errors.extend(r.errors)
-                except Exception as e:
-                    error_msg = f"Error ingesting markdown {fpath}: {e}"
-                    all_errors.append(error_msg)
-                    logger.error(error_msg)
-
-        # --- Phase 2: Ingest code files via batch CodeParser ---
-        if code_files:
-            logger.info(f"Phase 2: Ingesting {len(code_files)} code files")
-            code_result = self._ingest_code_project(project_path, project_name, full_reindex)
-            total_processed += code_result.files_processed
-            total_skipped += code_result.files_skipped
-            total_chunks += code_result.chunks_created
-            all_errors.extend(code_result.errors)
-
-        duration = time.time() - start
-        result = IngestResult(
-            files_processed=total_processed,
-            files_skipped=total_skipped,
-            chunks_created=total_chunks,
-            errors=all_errors,
-            duration_seconds=round(duration, 2)
+        scanned = self._scan_project_files(project_path, project_name)
+        markdown_files = scanned["markdown"]
+        code_files = scanned["code"]
+        logger.info(
+            "Starting project batch ingest: %s (%s markdown, %s code, full_reindex=%s)",
+            project_name,
+            len(markdown_files),
+            len(code_files),
+            full_reindex,
         )
-        logger.info(f"Project ingestion complete: {result}")
+
+        markdown_total = len(markdown_files)
+        code_total = len(code_files)
+        state = state or {}
+        phase = str(state.get("phase", "markdown"))
+        markdown_index = int(state.get("markdown_index", 0) or 0)
+        code_index = int(state.get("code_index", 0) or 0)
+
+        if not markdown_files and phase == "markdown":
+            phase = "code"
+        if phase not in {"markdown", "code", "done"}:
+            phase = "markdown" if markdown_files else "code"
+        if phase == "done" and (markdown_index < markdown_total or code_index < code_total):
+            phase = "markdown" if markdown_index < markdown_total else "code"
+
+        errors: list[str] = []
+        files_processed = 0
+        files_skipped = 0
+        chunks_created = 0
+        files_handled = 0
+
+        if full_reindex:
+            try:
+                self.store.delete(self.config.code_collection, where={"project_name": project_name})
+                self.keyword_index.delete_by_project(self.config.code_collection, project_name)
+            except Exception as exc:
+                errors.append(f"Failed to clear code chunks for {project_name}: {exc}")
+
+            if self.obsidian_parser:
+                for file_path in markdown_files:
+                    stored_path = self._project_markdown_store_path(file_path)
+                    try:
+                        self.store.delete_by_file_path(self.config.docs_collection, stored_path)
+                        self.keyword_index.delete_by_file_path(self.config.docs_collection, stored_path)
+                    except Exception as exc:
+                        errors.append(f"Failed to clear markdown chunks for {stored_path}: {exc}")
+
+            existing_doc_hashes: dict[str, str] = {}
+            existing_code_hashes: dict[str, str] = {}
+        else:
+            existing_doc_hashes = self.store.get_file_hashes(self.config.docs_collection)
+            existing_code_hashes = self.store.get_file_hashes(self.config.code_collection)
+
+        def budget_exhausted() -> bool:
+            if files_handled == 0:
+                return False
+            if max_files is not None and files_handled >= max_files:
+                return True
+            if max_chunks is not None and chunks_created >= max_chunks:
+                return True
+            if time_budget_seconds is not None and (time.time() - start) >= time_budget_seconds:
+                return True
+            return False
+
+        def snapshot(current_phase: str) -> dict[str, Any]:
+            return {
+                "phase": current_phase,
+                "markdown_index": markdown_index,
+                "code_index": code_index,
+                "markdown_total": markdown_total,
+                "code_total": code_total,
+                "files_processed": files_processed,
+                "files_skipped": files_skipped,
+                "chunks_created": chunks_created,
+                "errors": list(errors),
+                "duration_seconds": round(time.time() - start, 2),
+            }
+
+        def emit_progress(current_phase: str) -> None:
+            if progress_callback is not None:
+                progress_callback(snapshot(current_phase))
+
+        if phase == "markdown" and markdown_files and not self.obsidian_parser:
+            errors.append("No Obsidian parser configured for project markdown ingestion")
+            files_skipped += len(markdown_files) - markdown_index
+            files_handled += max(0, len(markdown_files) - markdown_index)
+            markdown_index = len(markdown_files)
+            phase = "code"
+
+        while phase == "markdown" and markdown_index < len(markdown_files):
+            file_path = markdown_files[markdown_index]
+            try:
+                stored_path = self._project_markdown_store_path(file_path)
+                file_hash = compute_file_hash(file_path)
+                if existing_doc_hashes.get(stored_path) == file_hash:
+                    files_skipped += 1
+                else:
+                    chunks = self.obsidian_parser.parse_file(file_path) if self.obsidian_parser else []
+                    result = self._store_chunk_list(
+                        self.config.docs_collection,
+                        chunks,
+                        existing_hashes=existing_doc_hashes,
+                    )
+                    files_processed += result.files_processed
+                    files_skipped += result.files_skipped
+                    chunks_created += result.chunks_created
+                    errors.extend(result.errors)
+                logger.info(
+                    "Project markdown progress (%s): %s/%s files handled",
+                    project_name,
+                    markdown_index + 1,
+                    len(markdown_files),
+                )
+            except Exception as exc:
+                error_msg = f"Error processing markdown {file_path}: {exc}"
+                errors.append(error_msg)
+                logger.error(error_msg)
+
+            markdown_index += 1
+            files_handled += 1
+            emit_progress("markdown" if markdown_index < len(markdown_files) else "code")
+            if budget_exhausted():
+                result = snapshot("markdown" if markdown_index < len(markdown_files) else "code")
+                result["status"] = "partial"
+                return result
+
+        phase = "code"
+
+        while phase == "code" and code_index < len(code_files):
+            file_path = code_files[code_index]
+            try:
+                file_hash = compute_file_hash(file_path)
+                if existing_code_hashes.get(file_path) == file_hash:
+                    files_skipped += 1
+                else:
+                    chunks = self.code_parser.parse_file(file_path, project_name)
+                    result = self._store_chunk_list(
+                        self.config.code_collection,
+                        chunks,
+                        existing_hashes=existing_code_hashes,
+                    )
+                    files_processed += result.files_processed
+                    files_skipped += result.files_skipped
+                    chunks_created += result.chunks_created
+                    errors.extend(result.errors)
+                logger.info(
+                    "Project code progress (%s): %s/%s files handled",
+                    project_name,
+                    code_index + 1,
+                    len(code_files),
+                )
+            except Exception as exc:
+                error_msg = f"Error processing code {file_path}: {exc}"
+                errors.append(error_msg)
+                logger.error(error_msg)
+
+            code_index += 1
+            files_handled += 1
+            emit_progress("code")
+            if budget_exhausted():
+                result = snapshot("code")
+                result["status"] = "partial"
+                return result
+
+        result = snapshot("done")
+        result["status"] = "done"
         return result
+
+    def ingest_project(self, project_path: str, project_name: str, full_reindex: bool = False) -> IngestResult:
+        """Ingest a project directory, handling both markdown and code files."""
+        result = self.ingest_project_batch(
+            project_path,
+            project_name,
+            state={"phase": "markdown", "markdown_index": 0, "code_index": 0},
+            full_reindex=full_reindex,
+            max_files=None,
+            max_chunks=None,
+            time_budget_seconds=None,
+        )
+        ingest_result = IngestResult(
+            files_processed=result["files_processed"],
+            files_skipped=result["files_skipped"],
+            chunks_created=result["chunks_created"],
+            errors=result["errors"],
+            duration_seconds=result["duration_seconds"],
+        )
+        logger.info("Project ingestion complete: %s", ingest_result)
+        return ingest_result
 
     def _ingest_code_project(self, project_path: str, project_name: str, full_reindex: bool = False) -> IngestResult:
         """Ingest only code files from a project directory (internal).
@@ -826,7 +1163,7 @@ class KnowledgeForgeEngine:
                     self.keyword_index.delete_by_file_path(collection, file_path)
 
                 contents = [c.content for c in file_chunk_list]
-                embeddings = self.embedder.embed_documents(contents)
+                embeddings = self._embed_for_ingest(contents)
                 ids = [c.chunk_id for c in file_chunk_list]
                 metadatas = [c.to_metadata() for c in file_chunk_list]
 
@@ -921,7 +1258,7 @@ class KnowledgeForgeEngine:
             self.keyword_index.delete_by_file_path(collection, chunks[0].file_path)
 
             contents = [c.content for c in chunks]
-            embeddings = self.embedder.embed_documents(contents)
+            embeddings = self._embed_for_ingest(contents)
             ids = [c.chunk_id for c in chunks]
             metadatas = [c.to_metadata() for c in chunks]
 
@@ -1154,6 +1491,7 @@ class KnowledgeForgeEngine:
             self.config.facts_collection,
             self.config.runbooks_collection,
             self.config.project_overviews_collection,
+            self.config.memory_cards_collection,
         ]:
             try:
                 count = self.store.count(col)
@@ -1163,8 +1501,12 @@ class KnowledgeForgeEngine:
                 logger.warning(f"Failed to count collection {col}: {e}")
                 stats["collections"][col] = 0
 
-        stats["embedding_model"] = self.config.embedding_model
+        stats["embedding_provider"] = self.embedder._resolved_provider()
+        stats["embedding_model"] = self.embedder.model_name
+        stats["embedding_dimension"] = self.embedder.dimension
         stats["data_dir"] = self.config.data_dir
+        stats["memory_registry_path"] = self.config.memory_registry_path
+        stats["memory_registry_cards"] = self.memory_registry.count()
         stats["obsidian_vault_configured"] = bool(self.config.obsidian_vault_path)
         stats["code_projects_configured"] = len(self.config.project_paths)
 
@@ -1203,6 +1545,98 @@ class KnowledgeForgeEngine:
         except Exception as e:
             logger.error(f"Failed to clear collection '{collection}': {e}")
             return False
+
+    # === STRUCTURED MEMORY CARDS ===
+
+    def store_memory_card(self, card: MemoryCard) -> MemoryCard:
+        """Store an extracted atomic memory card in SQLite, ChromaDB, and FTS."""
+        stored = self.memory_registry.upsert_card(card)
+        collection = self.config.memory_cards_collection
+        chroma_id = f"memory_{stored.card_id}"
+        content = stored.to_embedding_text()
+        metadata = stored.to_metadata()
+        embedding = self._embed_for_ingest([content])[0]
+
+        existing = self.store.get(collection, ids=[chroma_id])
+        if existing.get("ids"):
+            self.store.update(
+                collection=collection,
+                ids=[chroma_id],
+                documents=[content],
+                embeddings=[embedding],
+                metadatas=[metadata],
+            )
+        else:
+            self.store.add(
+                collection=collection,
+                ids=[chroma_id],
+                documents=[content],
+                embeddings=[embedding],
+                metadatas=[metadata],
+            )
+        self.keyword_index.upsert_chunks(collection, [chroma_id], [content], [metadata])
+        return stored
+
+    def list_memory_cards(
+        self,
+        project: str | None = None,
+        memory_type: str | None = None,
+        status: str | None = None,
+        current_truth: bool | None = None,
+        limit: int = 100,
+    ) -> list[MemoryCard]:
+        """List structured memory cards from the SQLite registry."""
+        return self.memory_registry.list_cards(
+            project=project,
+            memory_type=memory_type,
+            status=status,
+            current_truth=current_truth,
+            limit=limit,
+        )
+
+    def search_memory_cards(
+        self,
+        query: str,
+        project: str | None = None,
+        memory_type: str | None = None,
+        max_results: int = 8,
+        min_score_threshold: float = 0.25,
+    ) -> SearchResponse:
+        """Search extracted memory cards only."""
+        return self.search(
+            query=query,
+            project=project,
+            category=memory_type,
+            max_results=max_results,
+            min_score_threshold=min_score_threshold,
+            collections=[self.config.memory_cards_collection],
+        )
+
+    def update_memory_card_status(
+        self,
+        card_id: str,
+        status: str,
+        current_truth: bool | None = None,
+    ) -> MemoryCard | None:
+        """Update memory card lifecycle state and sync Chroma metadata."""
+        card = self.memory_registry.update_status(card_id, status, current_truth)
+        if not card:
+            return None
+        return self.store_memory_card(card)
+
+    def get_memory_audit(self) -> dict:
+        """Return structured memory card counts by status/type/project."""
+        audit = self.memory_registry.audit()
+        audit["collection"] = self.config.memory_cards_collection
+        audit["registry_path"] = self.config.memory_registry_path
+        return audit
+
+    def import_memory_cards(self, cards: list[MemoryCard]) -> list[MemoryCard]:
+        """Store a batch of normalized memory cards."""
+        stored: list[MemoryCard] = []
+        for card in cards:
+            stored.append(self.store_memory_card(card))
+        return stored
 
     def store_semantic_record(self, record: SemanticRecord) -> SemanticRecord:
         """Store a curated semantic record in the appropriate semantic collection."""
@@ -1321,6 +1755,95 @@ class KnowledgeForgeEngine:
         self.store.update(collection, ids=[chroma_id], metadatas=[record.to_metadata()])
         return True
 
+    def mark_semantic_reviewed(self, record_id: str, record_type: str) -> bool:
+        """Touch reviewed_at timestamp on a semantic record without changing status."""
+        collection_map = {
+            "fact": self.config.facts_collection,
+            "runbook": self.config.runbooks_collection,
+            "project_overview": self.config.project_overviews_collection,
+        }
+        collection = collection_map.get(record_type)
+        if not collection:
+            raise RuntimeError(f"Unsupported semantic record type: {record_type}")
+
+        chroma_id = f"semantic_{record_type}_{record_id}"
+        data = self.store.get(collection, ids=[chroma_id])
+        if not data.get("ids"):
+            return False
+
+        metadata = data["metadatas"][0]
+        now = datetime.now(timezone.utc).isoformat()
+        metadata["reviewed_at"] = now
+        metadata["updated_at"] = now
+        self.store.update(collection, ids=[chroma_id], metadatas=[metadata])
+        return True
+
+    def get_stale_records(self, stale_days: int = 30, project: str | None = None) -> list[SemanticRecord]:
+        """Return active semantic records that have never been reviewed or were last reviewed
+        more than stale_days ago."""
+        active = self.list_semantic_records(status="active", project=project, limit=1000)
+        now = datetime.now(timezone.utc)
+        stale = []
+        for r in active:
+            if not r.reviewed_at:
+                stale.append(r)
+            else:
+                try:
+                    reviewed = datetime.fromisoformat(r.reviewed_at.replace("Z", "+00:00"))
+                    if (now - reviewed).days >= stale_days:
+                        stale.append(r)
+                except (ValueError, TypeError):
+                    stale.append(r)
+        return stale
+
+    def replace_semantic_record(
+        self,
+        old_record_id: str,
+        record_type: str,
+        new_title: str,
+        new_content: str,
+        new_project: str = "",
+        new_tags: list[str] | None = None,
+        new_confidence: float = 0.9,
+    ) -> tuple[SemanticRecord, bool]:
+        """Create a new semantic record and supersede the old one atomically.
+
+        Returns (new_record, old_superseded_ok).
+        """
+        # Fetch old record for context
+        collection_map = {
+            "fact": self.config.facts_collection,
+            "runbook": self.config.runbooks_collection,
+            "project_overview": self.config.project_overviews_collection,
+        }
+        collection = collection_map.get(record_type)
+        if not collection:
+            raise RuntimeError(f"Unsupported semantic record type: {record_type}")
+
+        chroma_id = f"semantic_{record_type}_{old_record_id}"
+        data = self.store.get(collection, ids=[chroma_id])
+        old_project = new_project
+        if data.get("ids"):
+            old_meta = data["metadatas"][0]
+            old_project = new_project or old_meta.get("project", "")
+
+        new_record = SemanticRecord(
+            title=new_title,
+            content=new_content,
+            project=old_project,
+            record_type=record_type,
+            tags=new_tags or [],
+            trust_level="T2",
+            status="active",
+            reviewed_at=datetime.now(timezone.utc).isoformat(),
+            confidence=new_confidence,
+        )
+        stored = self.store_semantic_record(new_record)
+        superseded_ok = self.update_semantic_record_status(
+            old_record_id, record_type, "superseded", stored.record_id
+        )
+        return stored, superseded_ok
+
     def search_semantic_records(
         self,
         query: str,
@@ -1406,6 +1929,11 @@ class KnowledgeForgeEngine:
                     "record_type": r.record_type,
                     "project": r.project,
                     "title": r.title,
+                    "created_at": r.created_at[:10] if r.created_at else "",
+                    "reviewed_at": r.reviewed_at[:10] if r.reviewed_at else "never",
+                    "age_days": (datetime.now(timezone.utc) - datetime.fromisoformat(
+                        r.created_at.replace("Z", "+00:00")
+                    )).days if r.created_at else 0,
                 }
                 for r in active if not r.reviewed_at
             ][:50],
@@ -1422,14 +1950,19 @@ class KnowledgeForgeEngine:
                 suggested_type = "runbook"
             elif d.category in ["pattern", "dependency"]:
                 suggested_type = "project_overview"
+            title = d.content.splitlines()[0][:120]
             suggestions.append({
                 "discovery_id": d.discovery_id,
                 "project": d.project,
                 "category": d.category,
                 "severity": d.severity,
                 "suggested_record_type": suggested_type,
-                "title": d.content.splitlines()[0][:120],
+                "title": title,
                 "content_preview": d.content[:160],
+                "promote_command": (
+                    f'knowledgeforge semantic promote-discovery "{d.discovery_id}" '
+                    f'{suggested_type} --title "{title}"'
+                ),
             })
         return suggestions
 
@@ -1566,7 +2099,7 @@ class KnowledgeForgeEngine:
                 ids = [c[0] for c in all_chunks]
                 contents = [c[1] for c in all_chunks]
                 metadatas = [c[2] for c in all_chunks]
-                embeddings = self.embedder.embed_documents(contents)
+                embeddings = self._embed_for_ingest(contents)
 
                 self.store.add(collection, ids, contents, embeddings, metadatas)
                 self.keyword_index.upsert_chunks(collection, ids, contents, metadatas)
@@ -1737,6 +2270,118 @@ class KnowledgeForgeEngine:
             return f"No content found for session {session_id}."
 
         return f"# Conversation: {session_id}\nSource: {jsonl_path}\n\n" + "\n".join(lines)
+
+    def list_conversation_sessions(
+        self,
+        project: str = None,
+        source_agent: str = None,
+        after: str = None,
+        before: str = None,
+        limit: int = 200,
+    ) -> dict:
+        """List indexed conversation sessions grouped from exchange records."""
+        collection = self.config.conversations_collection
+
+        filters = []
+        if project:
+            filters.append({"project": project})
+        if source_agent:
+            filters.append({"source_agent": source_agent})
+        if after:
+            filters.append({"timestamp": {"$gte": after}})
+        if before:
+            filters.append({"timestamp": {"$lte": before}})
+
+        where = None
+        if len(filters) == 1:
+            where = filters[0]
+        elif len(filters) > 1:
+            where = {"$and": filters}
+
+        try:
+            result = self.store.get(collection, where=where)
+        except Exception as e:
+            logger.warning(f"Failed to list conversation sessions: {e}")
+            return {"total_sessions": 0, "sessions": []}
+
+        sessions = {}
+        documents = result.get("documents", [])
+        metadatas = result.get("metadatas", [])
+
+        for document, meta in zip(documents, metadatas):
+            if not meta:
+                continue
+
+            session_id = meta.get("session_id")
+            if not session_id:
+                continue
+
+            timestamp = str(meta.get("timestamp", ""))
+            summary_hint = ""
+            if isinstance(document, str):
+                for line in document.splitlines():
+                    if line.startswith("Summary:"):
+                        summary_hint = line.replace("Summary:", "", 1).strip()
+                        break
+
+            session = sessions.setdefault(
+                session_id,
+                {
+                    "session_id": session_id,
+                    "project": meta.get("project", ""),
+                    "source_agent": meta.get("source_agent", "unknown"),
+                    "exchange_count": 0,
+                    "first_timestamp": timestamp,
+                    "last_timestamp": timestamp,
+                    "archive_path": meta.get("archive_path", ""),
+                    "tool_names": set(),
+                    "summary_hint": "",
+                    "category": meta.get("category", ""),
+                    "intent": meta.get("intent", ""),
+                },
+            )
+
+            session["exchange_count"] += 1
+
+            if timestamp and (not session["first_timestamp"] or timestamp < session["first_timestamp"]):
+                session["first_timestamp"] = timestamp
+            if timestamp and (not session["last_timestamp"] or timestamp > session["last_timestamp"]):
+                session["last_timestamp"] = timestamp
+
+            if not session["summary_hint"] and summary_hint:
+                session["summary_hint"] = summary_hint
+            if not session["archive_path"] and meta.get("archive_path"):
+                session["archive_path"] = meta.get("archive_path", "")
+            if not session["category"] and meta.get("category"):
+                session["category"] = meta.get("category", "")
+            if not session["intent"] and meta.get("intent"):
+                session["intent"] = meta.get("intent", "")
+
+            raw_tool_names = str(meta.get("tool_names", "") or "")
+            for tool_name in raw_tool_names.split(","):
+                cleaned = tool_name.strip()
+                if cleaned:
+                    session["tool_names"].add(cleaned)
+
+        ordered_sessions = sorted(
+            sessions.values(),
+            key=lambda item: item.get("last_timestamp", ""),
+            reverse=True,
+        )
+
+        serialized = []
+        for session in ordered_sessions[: max(1, limit)]:
+            serialized.append(
+                {
+                    **session,
+                    "tool_names": sorted(session["tool_names"]),
+                }
+            )
+
+        return {
+            "total_sessions": len(ordered_sessions),
+            "sessions": serialized,
+        }
 
     def _find_session_file(self, session_id: str) -> Optional[str]:
         """Find a JSONL file by session ID across all conversation sources."""

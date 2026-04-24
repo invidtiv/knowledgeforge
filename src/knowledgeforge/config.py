@@ -6,17 +6,50 @@ Uses pydantic-settings for validation and type safety.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, model_validator
+from pydantic import BaseModel, Field, model_validator
 from pathlib import Path
 from typing import Optional, Any
 import os
 import yaml
 
 
+def _load_env_file(env_path: str) -> None:
+    """Load KEY=VALUE pairs from a local env file without overwriting env vars."""
+    path = Path(os.path.expanduser(env_path))
+    if not path.exists() or not path.is_file():
+        return
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for raw_line in f:
+                line = raw_line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+
+                if line.startswith("export "):
+                    line = line[len("export "):].strip()
+
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip().strip("'\"")
+                if key and key not in os.environ:
+                    os.environ[key] = value
+    except Exception as exc:
+        print(f"Warning: Could not read env file {path}: {exc}")
+
+
 class ProjectPath(BaseSettings):
     """Configuration for a single project path."""
     path: str
     name: str
+
+
+class ProjectIngestOverride(BaseModel):
+    """Optional ingest overrides for a configured project."""
+
+    ignore_patterns: list[str] = Field(default_factory=list)
+    skip_markdown: bool = False
+    skip_code: bool = False
 
 
 class KnowledgeForgeConfig(BaseSettings):
@@ -44,10 +77,15 @@ class KnowledgeForgeConfig(BaseSettings):
     # Embedding
     embedding_model: str = "nomic-ai/nomic-embed-text-v1.5"
     embedding_device: str = "cpu"
+    embedding_batch_size: int = 16
+    embedding_provider: str = "auto"
+    openai_api_key: str = ""
+    openrouter_api_key: str = ""
 
     # ChromaDB
     chroma_persist_dir: str = ""  # defaults to {data_dir}/chromadb
     keyword_index_path: str = ""  # defaults to {data_dir}/keyword_index.sqlite3
+    memory_registry_path: str = ""  # defaults to {data_dir}/memory_registry.sqlite3
 
     # Collections
     docs_collection: str = "documents"
@@ -56,10 +94,16 @@ class KnowledgeForgeConfig(BaseSettings):
     facts_collection: str = "facts"
     runbooks_collection: str = "runbooks"
     project_overviews_collection: str = "project_overviews"
+    memory_cards_collection: str = "memory_cards"
 
     # Chunking
     max_chunk_size: int = 400
     chunk_overlap: int = 80
+
+    # Queue runner
+    queue_max_files_per_run: int = 8
+    queue_max_chunks_per_run: int = 400
+    queue_time_budget_seconds: int = 240
 
     # Server
     rest_host: str = "127.0.0.1"
@@ -86,6 +130,11 @@ class KnowledgeForgeConfig(BaseSettings):
     conversation_max_tool_result_chars: int = 500
     conversation_sync_on_start: bool = True
 
+    # OB1 bridge
+    ob1_supabase_url: str = ""
+    ob1_supabase_key: str = ""
+    ob1_access_key: str = ""
+
     # File patterns
     obsidian_extensions: list[str] = Field(default_factory=lambda: [".md"])
     code_extensions: list[str] = Field(default_factory=lambda: [
@@ -97,6 +146,7 @@ class KnowledgeForgeConfig(BaseSettings):
         "node_modules", ".git", "__pycache__", ".obsidian",
         "venv", ".venv", "dist", "build", ".next", ".trash"
     ])
+    project_ingest_overrides: dict[str, ProjectIngestOverride] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def expand_paths(self) -> "KnowledgeForgeConfig":
@@ -136,6 +186,13 @@ class KnowledgeForgeConfig(BaseSettings):
         else:
             self.keyword_index_path = os.path.expanduser(self.keyword_index_path)
 
+        if not self.memory_registry_path:
+            self.memory_registry_path = os.path.join(
+                self.data_dir, "memory_registry.sqlite3"
+            )
+        else:
+            self.memory_registry_path = os.path.expanduser(self.memory_registry_path)
+
         return self
 
     @model_validator(mode="after")
@@ -158,7 +215,19 @@ class KnowledgeForgeConfig(BaseSettings):
             keyword_parent = Path(self.keyword_index_path).parent
             keyword_parent.mkdir(parents=True, exist_ok=True)
 
+        if self.memory_registry_path:
+            memory_parent = Path(self.memory_registry_path).parent
+            memory_parent.mkdir(parents=True, exist_ok=True)
+
         return self
+
+    def get_project_ingest_override(self, project_name: str) -> ProjectIngestOverride:
+        """Return ingest overrides for a project, or defaults if none are configured."""
+
+        override = self.project_ingest_overrides.get(project_name)
+        if override is None:
+            return ProjectIngestOverride()
+        return override
 
     @classmethod
     def load_config(cls, config_path: Optional[str] = None) -> "KnowledgeForgeConfig":
@@ -184,6 +253,15 @@ class KnowledgeForgeConfig(BaseSettings):
 
         # Determine config file path
         paths_to_check = []
+
+        # Load local secrets before pydantic-settings reads the environment.
+        # Plain provider keys such as OPENROUTER_API_KEY are consumed by
+        # provider clients, while KNOWLEDGEFORGE_* entries override YAML config.
+        secrets_path = os.getenv(
+            "KNOWLEDGEFORGE_SECRETS_FILE",
+            "~/.config/knowledgeforge/secrets.env",
+        )
+        _load_env_file(secrets_path)
 
         if config_path:
             paths_to_check.append(config_path)

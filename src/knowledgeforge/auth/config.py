@@ -42,7 +42,7 @@ class AuthGatewayConfig(BaseSettings):
 
     # Rate limiting
     max_pending_requests: int = 10
-    request_cooldown_seconds: int = 30
+    request_cooldown_seconds: int = 2
 
     # Local bypass — IPs that skip authentication
     local_ips: list[str] = [
@@ -52,9 +52,28 @@ class AuthGatewayConfig(BaseSettings):
     ]
 
     def ensure_jwt_secret(self) -> "AuthGatewayConfig":
-        """Generate a JWT secret if none was provided."""
-        if not self.jwt_secret:
-            self.jwt_secret = secrets.token_urlsafe(32)
+        """Load or generate a JWT secret, persisting it for restart survival.
+
+        If no secret was provided via env var, we look for a persisted one at
+        ``<db_dir>/jwt_secret``.  If that doesn't exist either, we generate a
+        new one and write it to disk so tokens survive service restarts.
+        """
+        if self.jwt_secret:
+            return self
+
+        secret_path = Path(os.path.expanduser(self.db_path)).parent / "jwt_secret"
+        if secret_path.exists():
+            stored = secret_path.read_text(encoding="utf-8").strip()
+            if stored:
+                self.jwt_secret = stored
+                return self
+
+        # Generate and persist
+        self.jwt_secret = secrets.token_urlsafe(32)
+        secret_path.parent.mkdir(parents=True, exist_ok=True)
+        secret_path.write_text(self.jwt_secret, encoding="utf-8")
+        # Restrict permissions to owner-only
+        secret_path.chmod(0o600)
         return self
 
     def load_telegram_token(self) -> "AuthGatewayConfig":

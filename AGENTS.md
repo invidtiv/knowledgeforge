@@ -14,9 +14,10 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
 ```
 
 ### Before Starting
-1. Create a task:
+1. Create a task with a structured description:
    ```bash
-   vk create "Task title" -t code -p PROJECT_NAME
+   vk create "Task title" -t code -p PROJECT_NAME \
+     --description "Objective:\n<what must be achieved>\n\nScope:\n- In scope: ...\n- Out of scope: ...\n\nConstraints:\n- ...\n\nExpected outputs:\n- ...\n\nAcceptance criteria:\n- ...\n\nDone criteria:\n- ..."
    ```
 
 2. Begin work (moves to in-progress, starts timer):
@@ -29,10 +30,8 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
   ```bash
   vk comment <task-id> "Progress update..."
   ```
-- Update task details:
-  ```bash
-  vk update <task-id> --description "Updated scope"
-  ```
+- Use comments for updates, blockers, and implementation notes.
+- Do not rely on `vk update` for the main task description field; put the structured task contract into `vk create --description` at creation time.
 
 ### After Commit/Push
 1. Complete task (stops timer, sets done, adds summary):

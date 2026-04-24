@@ -41,8 +41,10 @@ The currently implemented config keys (in `src/knowledgeforge/config.py`) includ
 - `data_dir`
 - `obsidian_vault_path`
 - `project_paths`
+- `embedding_provider`
 - `embedding_model`
 - `embedding_device`
+- `embedding_batch_size`
 - `max_chunk_size`
 - `chunk_overlap`
 - `rest_host`
@@ -94,12 +96,11 @@ chromadb:
     hnsw:space: cosine
 
 # Embedding model configuration
-embeddings:
-  model_name: nomic-ai/nomic-embed-text-v1.5
-  device: cpu  # Options: cpu, cuda, mps (Apple Silicon)
-  batch_size: 32
-  normalize_embeddings: true
-  trust_remote_code: true
+embedding_provider: openrouter  # auto, openai, openrouter, local
+embedding_model: openai/text-embedding-3-small
+embedding_device: cpu    # Used only by local sentence-transformers models
+embedding_batch_size: 16
+memory_registry_path: ~/.local/share/knowledgeforge/memory_registry.sqlite3
 
 # Chunking strategy
 chunking:
@@ -264,45 +265,44 @@ project_paths:
 
 ### Embedding Settings
 
-#### `embeddings`
-- **Type:** `object`
-- **Description:** Embedding model configuration
+##### `embedding_provider`
+- **Type:** `string`
+- **Default:** `auto`
+- **Options:** `auto`, `openai`, `openrouter`, `local`
+- **Description:** Embedding backend. Use `openrouter` to match OB1. `auto` uses `OPENAI_API_KEY` when present, then `OPENROUTER_API_KEY`, then falls back to the local CPU model.
 
-**Fields:**
-
-##### `model_name`
+##### `embedding_model`
 - **Type:** `string`
 - **Default:** `nomic-ai/nomic-embed-text-v1.5`
-- **Description:** HuggingFace model identifier
-- **Alternatives:**
-  - `sentence-transformers/all-MiniLM-L6-v2` (faster, smaller)
-  - `BAAI/bge-small-en-v1.5` (better quality)
-  - `thenlper/gte-base` (multilingual)
+- **Recommended OpenRouter model:** `openai/text-embedding-3-small`
+- **Description:** Embedding model identifier. With OpenRouter, use `openai/text-embedding-3-small`.
 
-##### `device`
+##### `embedding_device`
 - **Type:** `string`
 - **Default:** `cpu`
 - **Options:** `cpu`, `cuda`, `mps`
-- **Description:** Device for model inference
-  - `cpu` - CPU only
-  - `cuda` - NVIDIA GPU (requires CUDA)
-  - `mps` - Apple Silicon GPU (M1/M2/M3)
+- **Description:** Device for local sentence-transformers inference only.
 
-##### `batch_size`
+##### `embedding_batch_size`
 - **Type:** `integer`
-- **Default:** `32`
-- **Description:** Batch size for embedding generation
-- **Tuning:** Increase for faster processing on GPU, decrease if out of memory
+- **Default:** `16`
+- **Description:** Number of texts sent per embedding request or local encode batch.
 
-##### `normalize_embeddings`
-- **Type:** `boolean`
-- **Default:** `true`
-- **Description:** L2-normalize embeddings (required for cosine similarity)
+Switching from the local Nomic model to OpenRouter/OpenAI embeddings changes vector dimensions from the existing local collection. Clear/reindex Chroma collections before mixing old and new embeddings.
 
-##### `trust_remote_code`
-- **Type:** `boolean`
-- **Default:** `true`
-- **Description:** Allow loading custom model code from HuggingFace
+Secrets are loaded from `~/.config/knowledgeforge/secrets.env` before config parsing. Put `OPENROUTER_API_KEY=...` there and keep the file mode restricted.
+
+### Structured Memory Settings
+
+##### `memory_cards_collection`
+- **Type:** `string`
+- **Default:** `memory_cards`
+- **Description:** ChromaDB collection used for atomic extracted memories from past conversations.
+
+##### `memory_registry_path`
+- **Type:** `string` (path)
+- **Default:** `{data_dir}/memory_registry.sqlite3`
+- **Description:** SQLite registry for structured filtering by project, type, status, confidence, and current-truth state.
 
 ---
 

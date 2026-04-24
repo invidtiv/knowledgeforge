@@ -65,12 +65,19 @@ project_paths:
     name: thevault
 
 # Embedding
-embedding_model: nomic-ai/nomic-embed-text-v1.5
+embedding_provider: openrouter
+embedding_model: openai/text-embedding-3-small
 embedding_device: cpu
+embedding_batch_size: 16
 
 # Chunking
 max_chunk_size: 1000
 chunk_overlap: 100
+
+# Queue runner
+queue_max_files_per_run: 8
+queue_max_chunks_per_run: 400
+queue_time_budget_seconds: 240
 
 # Servers
 rest_host: 127.0.0.1
@@ -106,3 +113,19 @@ ignore_patterns:
   - build
   - .next
   - .trash
+
+# OB1 (Open Brain) Bridge
+# Set real values in ~/.config/knowledgeforge/secrets.env using:
+# KNOWLEDGEFORGE_OB1_SUPABASE_URL=...
+# KNOWLEDGEFORGE_OB1_SUPABASE_KEY=...
+# KNOWLEDGEFORGE_OB1_ACCESS_KEY=...
+ob1_supabase_url: ""
+ob1_supabase_key: ""
+ob1_access_key: ""
+
+project_ingest_overrides:
+  ScraptRunBot:
+    ignore_patterns:
+      - Plans
+      - Changelogs
+      - docs/archive

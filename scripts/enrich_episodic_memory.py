@@ -41,6 +41,7 @@ ERRORS_FILE = OUTPUT_DIR / "_errors.jsonl"
 STATS_FILE = OUTPUT_DIR / "_stats.json"
 
 KIMI_CMD = shutil.which("kimi") or "kimi"
+KIMI_MODEL = os.getenv("KNOWLEDGEFORGE_KIMI_MODEL", "kimi-code/kimi-for-coding")
 KIMI_TIMEOUT = 90  # seconds per exchange
 KIMI_MAX_RETRIES = 2
 
@@ -131,7 +132,7 @@ class EnrichedExchange:
     # Embedding content (what gets embedded into the vector)
     embedding_content: str = ""
     enriched_at: str = ""
-    enrichment_model: str = "kimi-k2.5"
+    enrichment_model: str = KIMI_MODEL
 
 
 # ---------------------------------------------------------------------------
@@ -278,8 +279,18 @@ def call_kimi(prompt: str, retries: int = KIMI_MAX_RETRIES) -> Optional[str]:
     for attempt in range(retries + 1):
         try:
             result = subprocess.run(
-                [KIMI_CMD, "--print", "--final-message-only", "--output-format", "text",
-                 "--no-thinking", "-p", prompt],
+                [
+                    KIMI_CMD,
+                    "--model",
+                    KIMI_MODEL,
+                    "--print",
+                    "--final-message-only",
+                    "--output-format",
+                    "text",
+                    "--no-thinking",
+                    "-p",
+                    prompt,
+                ],
                 capture_output=True,
                 text=True,
                 timeout=KIMI_TIMEOUT,
@@ -516,7 +527,7 @@ def run_pipeline(
         "basic_metadata": 0,
         "errors": 0,
         "started_at": datetime.now().isoformat(),
-        "enrichment_model": "none" if skip_enrichment else "kimi-k2.5",
+        "enrichment_model": "none" if skip_enrichment else KIMI_MODEL,
     }
 
     if dry_run:
@@ -584,7 +595,7 @@ def run_pipeline(
                 searchable_text=meta.searchable_text,
                 embedding_content=build_embedding_content(raw, meta),
                 enriched_at=datetime.now().isoformat(),
-                enrichment_model="none" if skip_enrichment else "kimi-k2.5",
+                enrichment_model="none" if skip_enrichment else KIMI_MODEL,
             )
 
             save_enriched(enriched)

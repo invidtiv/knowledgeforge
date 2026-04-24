@@ -5,8 +5,10 @@ import logging
 import sys
 from mcp.server.fastmcp import FastMCP
 
+from knowledgeforge.bridges.ob1_bridge import OB1Bridge
 from knowledgeforge.config import KnowledgeForgeConfig
 from knowledgeforge.core.engine import KnowledgeForgeEngine
+from knowledgeforge.core.models import Chunk, MemoryCard
 
 logger = logging.getLogger(__name__)
 
@@ -196,8 +198,154 @@ def list_semantic_memory(
 
 
 @mcp.tool()
+def store_memory_card(
+    memory_type: str,
+    title: str,
+    body: str,
+    project: str = "unknown",
+    why: str = "",
+    status: str = "active_unverified",
+    confidence: str = "medium",
+    tags: str = "",
+    source_conversation: str = "",
+    source_date: str = "",
+    current_truth: bool = False,
+    needs_repo_confirmation: bool = True,
+) -> str:
+    """Store an atomic structured memory card.
+
+    Use this for durable decisions, constraints, failed attempts, resolutions,
+    TODOs, API contracts, and user preferences. Old conversation-derived cards
+    should usually be active_unverified or historical, not current truth.
+    """
+    engine = get_engine()
+    card = MemoryCard(
+        type=memory_type,
+        project=project,
+        title=title,
+        body=body,
+        why=why,
+        status=status,
+        confidence=confidence,
+        source_conversation=source_conversation,
+        source_date=source_date,
+        current_truth=current_truth,
+        needs_repo_confirmation=needs_repo_confirmation,
+        tags=[t.strip() for t in tags.split(",") if t.strip()],
+    )
+    stored = engine.store_memory_card(card)
+    return (
+        f"Memory card stored: {stored.card_id}\n"
+        f"Type: {stored.type}\n"
+        f"Project: {stored.project}\n"
+        f"Status: {stored.status}\n"
+        f"Current truth: {stored.current_truth}"
+    )
+
+
+@mcp.tool()
+def search_memory_cards(
+    query: str,
+    project: str = "",
+    memory_type: str = "",
+    max_results: int = 8,
+    min_score_threshold: float = 0.25,
+) -> str:
+    """Search extracted structured memory cards only.
+
+    Results include status and current_truth so agents can avoid implementing
+    from historical memory alone.
+    """
+    engine = get_engine()
+    response = engine.search_memory_cards(
+        query=query,
+        project=project or None,
+        memory_type=memory_type or None,
+        max_results=max_results,
+        min_score_threshold=min_score_threshold,
+    )
+    if not response.results:
+        return "No structured memory card results found."
+
+    lines = [f"Found {response.total_results} memory results ({response.search_time_ms}ms):\n"]
+    for i, result in enumerate(response.results, 1):
+        meta = result.metadata or {}
+        lines.append(f"--- Result {i} (score: {result.score}) ---")
+        lines.append(
+            " | ".join(
+                [
+                    f"ID: {meta.get('card_id') or meta.get('memory_card_id') or '?'}",
+                    f"Type: {meta.get('type', '?')}",
+                    f"Project: {meta.get('project', '-') or '-'}",
+                    f"Status: {meta.get('status', '?')}",
+                    f"Current truth: {meta.get('current_truth', False)}",
+                    f"Confidence: {meta.get('confidence_label', '?')}",
+                ]
+            )
+        )
+        title = meta.get("title", "")
+        if title:
+            lines.append(f"Title: {title}")
+        lines.append(result.content[:700])
+        lines.append("")
+    return "\n".join(lines)
+
+
+@mcp.tool()
+def list_memory_cards(
+    project: str = "",
+    memory_type: str = "",
+    status: str = "",
+    current_truth_only: bool = False,
+    limit: int = 50,
+) -> str:
+    """List structured memory cards with lifecycle metadata."""
+    engine = get_engine()
+    cards = engine.list_memory_cards(
+        project=project or None,
+        memory_type=memory_type or None,
+        status=status or None,
+        current_truth=True if current_truth_only else None,
+        limit=limit,
+    )
+    if not cards:
+        return "No structured memory cards found."
+
+    lines = [f"Found {len(cards)} memory cards:\n"]
+    for card in cards:
+        lines.append(
+            f"- {card.card_id[:12]}... | {card.type} | {card.project} | "
+            f"status={card.status} | truth={card.current_truth} | "
+            f"confidence={card.confidence} | {card.title}"
+        )
+    return "\n".join(lines)
+
+
+@mcp.tool()
+def get_memory_card_audit() -> str:
+    """Show structured memory card counts by status/type/project."""
+    engine = get_engine()
+    audit = engine.get_memory_audit()
+    lines = ["Structured Memory Audit:\n"]
+    lines.append(f"- Total cards: {audit['total_cards']}")
+    lines.append(f"- Current truth cards: {audit['current_truth_cards']}")
+    lines.append(f"- Needs repo confirmation: {audit['needs_repo_confirmation']}")
+    lines.append("\nBy status:")
+    for key, count in audit["by_status"].items():
+        lines.append(f"- {key}: {count}")
+    lines.append("\nBy type:")
+    for key, count in audit["by_type"].items():
+        lines.append(f"- {key}: {count}")
+    lines.append("\nBy project:")
+    for key, count in audit["by_project"].items():
+        lines.append(f"- {key}: {count}")
+    return "\n".join(lines)
+
+
+@mcp.tool()
 def get_semantic_audit() -> str:
-    """Show lifecycle, linkback, stale-review, and coverage audit data for semantic memory."""
+    """Show lifecycle, linkback, stale-review, and coverage audit data for semantic memory.
+    Includes actionable recommendations for each issue found."""
     engine = get_engine()
     audit = engine.get_semantic_audit()
     summary = audit["summary"]
@@ -218,24 +366,38 @@ def get_semantic_audit() -> str:
     lines.append("\nBy project:")
     for k, v in audit["by_project"].items():
         lines.append(f"- {k}: {v}")
+
+    # Actionable recommendations
+    actions = []
     if audit.get("coverage_gap_projects"):
-        lines.append("\nCoverage gap projects:")
+        lines.append("\nCoverage gap projects (indexed code but no semantic records):")
         for p in audit["coverage_gap_projects"]:
             lines.append(f"- {p}")
+            actions.append(f"Bootstrap coverage: knowledgeforge semantic bootstrap-project \"{p}\"")
     if audit.get("promotion_candidates"):
-        lines.append("\nPromotion candidates:")
+        lines.append(f"\nPromotion candidates ({len(audit['promotion_candidates'])} confirmed discoveries not yet promoted):")
         for d in audit["promotion_candidates"][:10]:
             lines.append(f"- {d['discovery_id'][:8]}... | {d['project'] or '-'} | {d['category']} | {d['severity']} | {d['content_preview']}")
+        actions.append("View promote commands: knowledgeforge semantic suggest-promotions --commands")
     if audit.get("stale_candidates"):
-        lines.append("\nStale review candidates:")
+        lines.append(f"\nStale review candidates ({len(audit['stale_candidates'])} never reviewed):")
         for r in audit["stale_candidates"][:10]:
-            lines.append(f"- {r['record_id'][:8]}... | {r['record_type']} | {r['project'] or '-'} | {r['title']}")
+            age = r.get("age_days", "?")
+            lines.append(f"- {r['record_id'][:8]}... | {r['record_type']} | {r['project'] or '-'} | {r['title']} | age: {age}d")
+        actions.append("Review stale records: knowledgeforge semantic review-stale --commands")
+
+    if actions:
+        lines.append("\n--- Recommended Actions ---")
+        for a in actions:
+            lines.append(f"  {a}")
+
     return "\n".join(lines)
 
 
 @mcp.tool()
 def suggest_semantic_promotions(project: str = "", limit: int = 20) -> str:
-    """Suggest confirmed discoveries that should likely be promoted into semantic memory."""
+    """Suggest confirmed discoveries that should likely be promoted into semantic memory.
+    Includes copy-paste CLI commands for each suggestion."""
     engine = get_engine()
     suggestions = engine.suggest_promotions(project=project or None, limit=limit)
     if not suggestions:
@@ -243,6 +405,7 @@ def suggest_semantic_promotions(project: str = "", limit: int = 20) -> str:
     lines = [f"Found {len(suggestions)} promotion suggestions:\n"]
     for s in suggestions:
         lines.append(f"- {s['discovery_id'][:8]}... | project={s['project'] or '-'} | category={s['category']} | severity={s['severity']} | suggested={s['suggested_record_type']} | {s['title']}")
+        lines.append(f"  Command: {s['promote_command']}")
     return "\n".join(lines)
 
 
@@ -282,6 +445,7 @@ def get_project_context(project: str) -> str:
                         collections=[engine.config.docs_collection], n_results=3)
     code = engine.search(query=f"{project} main entry point", project=project,
                         collections=[engine.config.code_collection], n_results=3)
+    memory = engine.search_memory_cards(query=f"{project} decisions constraints failed attempts", project=project, max_results=5)
     discoveries = engine.get_discoveries(project=project)
 
     lines = [f"# Project Context: {project}\n"]
@@ -296,6 +460,14 @@ def get_project_context(project: str) -> str:
         source = r.metadata.get("file_path") or r.metadata.get("source_file", "?")
         symbol = r.metadata.get("symbol_name", "")
         lines.append(f"- [{source}] {symbol}: {r.content[:150]}")
+
+    lines.append("\n## Structured Memory")
+    for r in memory.results:
+        meta = r.metadata or {}
+        lines.append(
+            f"- [{meta.get('type', '?')}] {meta.get('title', '')} "
+            f"(status={meta.get('status', '?')}, truth={meta.get('current_truth', False)})"
+        )
 
     lines.append(f"\n## Discoveries ({len(discoveries)} total)")
     for d in discoveries[:5]:
@@ -459,6 +631,104 @@ def read_conversation(
         start_line=start_line or None,
         end_line=end_line or None,
     )
+
+
+@mcp.tool()
+def import_ob1_thoughts(
+    supabase_url: str,
+    supabase_key: str,
+    limit: int = 50,
+    since: str = "",
+    type_filter: str = "",
+) -> str:
+    """Import thoughts from OB1 (Open Brain) into KnowledgeForge.
+
+    Fetches thoughts from the OB1 Supabase database and indexes them
+    in KnowledgeForge's documents collection for unified search.
+
+    Args:
+        supabase_url: OB1 Supabase project URL (e.g., https://xxx.supabase.co)
+        supabase_key: OB1 Supabase service role key
+        limit: Maximum number of thoughts to import (default 50)
+        since: Only import thoughts created after this ISO date (optional)
+        type_filter: Filter by thought type in metadata (optional)
+    """
+    engine = get_engine()
+    bridge = OB1Bridge(supabase_url, supabase_key)
+
+    thoughts = bridge.fetch_ob1_thoughts(
+        limit=limit,
+        since=since or None,
+        type_filter=type_filter or None,
+    )
+
+    if not thoughts:
+        return "No OB1 thoughts found matching criteria."
+
+    chunks = []
+    for thought in thoughts:
+        fingerprint = bridge._content_fingerprint(thought.get("content", ""))
+        metadata = thought.get("metadata", {})
+        topics = metadata.get("topics", [])
+        project = topics[0] if isinstance(topics, list) and topics else "ob1"
+
+        chunk = Chunk(
+            chunk_id=f"ob1_thought_{thought['id']}_0",
+            content=thought["content"],
+            file_path=f"ob1://thoughts/{thought['id']}",
+            content_hash=fingerprint,
+            chunk_index=0,
+            chunk_type="thought",
+            trust_level="T3",
+            project_name=project,
+            created_at=thought.get("created_at", ""),
+            updated_at=thought.get("updated_at", ""),
+        )
+        chunks.append(chunk)
+
+    engine.store.add(
+        collection="documents",
+        ids=[c.chunk_id for c in chunks],
+        documents=[c.content for c in chunks],
+        embeddings=engine._embed_for_ingest([c.content for c in chunks]),
+        metadatas=[c.to_metadata() for c in chunks],
+    )
+
+    return f"Imported {len(chunks)} OB1 thoughts into KnowledgeForge documents collection."
+
+
+@mcp.tool()
+def export_discoveries_to_ob1(
+    supabase_url: str,
+    supabase_key: str,
+    project: str = "",
+    confirmed_only: bool = True,
+) -> str:
+    """Export KnowledgeForge discoveries to OB1 as thoughts.
+
+    Pushes confirmed discoveries to OB1's Supabase database.
+    Each discovery becomes a thought with source metadata.
+
+    Args:
+        supabase_url: OB1 Supabase project URL
+        supabase_key: OB1 Supabase service role key
+        project: Filter discoveries by project (optional)
+        confirmed_only: Only export confirmed discoveries (default true)
+    """
+    engine = get_engine()
+    bridge = OB1Bridge(supabase_url, supabase_key)
+
+    discoveries = engine.get_discoveries(
+        project=project or None,
+        unconfirmed_only=False,
+    )
+
+    result = bridge.export_discoveries_to_ob1(
+        discoveries,
+        skip_unconfirmed=confirmed_only,
+    )
+
+    return f"Export complete: {result['synced']} synced, {result['skipped']} skipped, {result['failed']} failed."
 
 
 def main():

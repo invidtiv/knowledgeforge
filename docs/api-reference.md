@@ -648,6 +648,48 @@ Advanced filtering is supported via the `filter` parameter in search requests:
 
 ---
 
+### List Conversation Sessions
+
+List grouped conversation sessions from the indexed `conversations` collection.
+
+**Endpoint:** `GET /api/v1/conversations/sessions`
+
+**Query Parameters:**
+- `project` (string, optional) - Exact conversation project filter
+- `source_agent` (string, optional) - `claude`, `codex`, or `gemini`
+- `after` (string, optional) - Only include sessions after `YYYY-MM-DD`
+- `before` (string, optional) - Only include sessions before `YYYY-MM-DD`
+- `limit` (integer, optional, default: `200`, max: `1000`) - Maximum grouped sessions to return
+
+**Response:**
+```json
+{
+  "total_sessions": 17,
+  "sessions": [
+    {
+      "session_id": "2a15a66d-32ac-4b4b-b4a7-819373c3c67b",
+      "project": "-home-bsdev-knowledgeforge",
+      "source_agent": "claude",
+      "exchange_count": 2,
+      "first_timestamp": "2026-04-03T19:41:03.027Z",
+      "last_timestamp": "2026-04-03T19:41:36.134Z",
+      "archive_path": "/home/bsdev/.claude/projects/-home-bsdev-knowledgeforge/2a15a66d-32ac-4b4b-b4a7-819373c3c67b.jsonl",
+      "tool_names": ["Bash", "Read"],
+      "summary_hint": "",
+      "category": "",
+      "intent": ""
+    }
+  ]
+}
+```
+
+**Example:**
+```bash
+curl "http://127.0.0.1:8742/api/v1/conversations/sessions?project=-home-bsdev-knowledgeforge&limit=10"
+```
+
+---
+
 ## Webhooks (Future)
 
 Future versions will support webhook notifications for:
