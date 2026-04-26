@@ -1,0 +1,606 @@
+{
+  "conversation_summary": {
+    "date": "2026-04-24",
+    "key_takeaways": [
+      "VS Code-style storage was read schema-first and selected by known non-secret conversation/history carriers.",
+      "Historical candidates remain current_truth=false and need repo confirmation.",
+      "Generated 24 reusable candidate card(s) from 20 extracted record(s)."
+    ],
+    "projects_detected": [
+      "Windsurf"
+    ],
+    "summary": "Scanned 20 windsurf historical record(s) from C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf and adapter-discovered companion stores. Only low-trust atomic memory candidates were written; no KnowledgeForge import was attempted.",
+    "title": "Windsurf VS Code storage atomic extraction"
+  },
+  "discarded_noise": [
+    {
+      "content_type": "records_without_durable_candidates",
+      "count": 12,
+      "reason": "count"
+    },
+    {
+      "content_type": "sentences_skipped_as_noise",
+      "count": 32,
+      "reason": "count"
+    }
+  ],
+  "memory_cards": [
+    {
+      "body": "Historical windsurf session Right now the codebase is single-emulator per process: settings.VM_SERIAL is a single string, and the automation loop as recorded this reusable item: The goal is to refactor the single-emulator process into a multi-emulator supervisor model within a single process. This will involve changes across configuration, the automation loop, ADB command execution, and logging.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Windsurf",
+      "source": {
+        "conversation_date": "2025-12-07",
+        "conversation_title": "Right now the codebase is single-emulator per process: settings.VM_SERIAL is a single string, and the automation loop as",
+        "message_refs": [
+          "exchange:6b54601910b57fc25f8f75727dceb1b7"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "historical-session",
+        "intent",
+        "objective",
+        "windsurf"
+      ],
+      "title": "The goal is to refactor the single-emulator process into a",
+      "type": "objective",
+      "why": "Objectives preserve the intended outcome without importing the whole conversation."
+    },
+    {
+      "body": "Historical windsurf session using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to  recorded this reusable item: This method is secure because all traffic is encrypted within the SSH tunnel, and you don't need to open any incoming ports on your home router.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "subagents",
+      "source": {
+        "conversation_date": "2025-11-08",
+        "conversation_title": "using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to ",
+        "message_refs": [
+          "exchange:d7a6235c7c944671bd1a74812ef7521d"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "api-contract",
+        "historical-session",
+        "interface",
+        "windsurf"
+      ],
+      "title": "This method is secure because all traffic is encrypted within",
+      "type": "api_contract",
+      "why": "API contracts are durable integration facts that future work must preserve or confirm."
+    },
+    {
+      "body": "Historical windsurf session use the credentials in rsync to get a list all the folders in the google drive , name , and ID .  check bsvmadmin, creat recorded this reusable item: user: do not use the list of folders inside gdrive, I want the data from google drive directly",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "bsvmadminbot",
+      "source": {
+        "conversation_date": "2026-01-08",
+        "conversation_title": "use the credentials in rsync to get a list all the folders in the google drive , name , and ID .  check bsvmadmin, creat",
+        "message_refs": [
+          "exchange:80dd89bf16c377bf168f5cba9d342768"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "decision",
+        "historical-session",
+        "rationale",
+        "windsurf"
+      ],
+      "title": "user: do not use the list of folders inside gdrive",
+      "type": "decision",
+      "why": "Decisions preserve why a particular implementation path was chosen."
+    },
+    {
+      "body": "Historical windsurf session Right now the codebase is single-emulator per process: settings.VM_SERIAL is a single string, and the automation loop as recorded this reusable item: ADB isolation: each loop must use its own serial for every ADB call; audit all ADB invocations to pass the per-loop serial instead of the global one.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Windsurf",
+      "source": {
+        "conversation_date": "2025-12-07",
+        "conversation_title": "Right now the codebase is single-emulator per process: settings.VM_SERIAL is a single string, and the automation loop as",
+        "message_refs": [
+          "exchange:6b54601910b57fc25f8f75727dceb1b7"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "decision",
+        "historical-session",
+        "rationale",
+        "windsurf"
+      ],
+      "title": "ADB isolation: each loop must use its own serial for",
+      "type": "decision",
+      "why": "Decisions preserve why a particular implementation path was chosen."
+    },
+    {
+      "body": "Historical windsurf session using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to  recorded this reusable item: The simple SSH command is great for temporary use, but it will break if your network connection drops. For a persistent, reliable tunnel, we'll use `autossh`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "subagents",
+      "source": {
+        "conversation_date": "2025-11-08",
+        "conversation_title": "using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to ",
+        "message_refs": [
+          "exchange:d7a6235c7c944671bd1a74812ef7521d"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "decision",
+        "historical-session",
+        "rationale",
+        "windsurf"
+      ],
+      "title": "The simple SSH command is great for temporary use, but",
+      "type": "decision",
+      "why": "Decisions preserve why a particular implementation path was chosen."
+    },
+    {
+      "body": "Historical windsurf session using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to  recorded this reusable item: 2. **Run the `autossh` command**. It's very similar to the `ssh` command, with the addition of `-M 0` to use SSH's internal keep-alive mechanism.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "subagents",
+      "source": {
+        "conversation_date": "2025-11-08",
+        "conversation_title": "using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to ",
+        "message_refs": [
+          "exchange:d7a6235c7c944671bd1a74812ef7521d"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "decision",
+        "historical-session",
+        "rationale",
+        "windsurf"
+      ],
+      "title": "2. Run the autossh command. It's very similar to the",
+      "type": "decision",
+      "why": "Decisions preserve why a particular implementation path was chosen."
+    },
+    {
+      "body": "Historical windsurf session /about recorded this reusable item: This must update the underlying Telegram message and database state.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": ".gemini",
+      "source": {
+        "conversation_date": "2026-01-21",
+        "conversation_title": "/about",
+        "message_refs": [
+          "exchange:21528be4d1d913d42efc1bf66f9946c2"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "This must update the underlying Telegram message and database state",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session /about recorded this reusable item: This action must trigger the **existing Telegram timer creation logic**.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": ".gemini",
+      "source": {
+        "conversation_date": "2026-01-21",
+        "conversation_title": "/about",
+        "message_refs": [
+          "exchange:21528be4d1d913d42efc1bf66f9946c2"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "This action must trigger the existing Telegram timer creation logic",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session /about recorded this reusable item: The frontend **must not duplicate logic**, but instead **orchestrate and control existing bot capabilities**.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": ".gemini",
+      "source": {
+        "conversation_date": "2026-01-21",
+        "conversation_title": "/about",
+        "message_refs": [
+          "exchange:21528be4d1d913d42efc1bf66f9946c2"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "The frontend must not duplicate logic, but instead orchestrate and",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session /about recorded this reusable item: The following files **must be created and maintained** inside the BSTimer project folder:",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": ".gemini",
+      "source": {
+        "conversation_date": "2026-01-21",
+        "conversation_title": "/about",
+        "message_refs": [
+          "exchange:21528be4d1d913d42efc1bf66f9946c2"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "The following files must be created and maintained inside the",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session /about recorded this reusable item: On the frontend homepage, I must be able to:",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": ".gemini",
+      "source": {
+        "conversation_date": "2026-01-21",
+        "conversation_title": "/about",
+        "message_refs": [
+          "exchange:21528be4d1d913d42efc1bf66f9946c2"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "On the frontend homepage, I must be able to",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session /about recorded this reusable item: For any active timer, I must be able to:",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": ".gemini",
+      "source": {
+        "conversation_date": "2026-01-21",
+        "conversation_title": "/about",
+        "message_refs": [
+          "exchange:21528be4d1d913d42efc1bf66f9946c2"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "For any active timer, I must be able to",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session create an agent using this standar he function will be to create changelogs, the file should always be changelog_TIMESTA recorded this reusable item: user: please modify it , I dont want to fetch the standard it must be include in the file",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "bs_alert_bot",
+      "source": {
+        "conversation_date": "2025-11-15",
+        "conversation_title": "create an agent using this standar he function will be to create changelogs, the file should always be changelog_TIMESTA",
+        "message_refs": [
+          "exchange:4e9b587b848622ed2307e75f0319e0da"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "user: please modify it , I dont want to fetch",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session analyse bs_alert_bot codebase the scheduler is not sending the alert once set , please create a document outlying what m recorded this reusable item: user: analyse bs_alert_bot codebase the scheduler is not sending the alert once set , please create a document outlying what migth be the issue. do not change code.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Windsurf",
+      "source": {
+        "conversation_date": "2025-11-11",
+        "conversation_title": "analyse bs_alert_bot codebase the scheduler is not sending the alert once set , please create a document outlying what m",
+        "message_refs": [
+          "exchange:114b92997bb01c509979f7256882032a"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "user: analyse bsalertbot codebase the scheduler is not sending the",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session analyse bs_alert_bot codebase the scheduler is not sending the alert once set , please create a document outlying what m recorded this reusable item: analyse bs_alert_bot codebase the scheduler is not sending the alert once set , please create a document outlying what migth be the issue. do not change code.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Windsurf",
+      "source": {
+        "conversation_date": "2025-11-11",
+        "conversation_title": "analyse bs_alert_bot codebase the scheduler is not sending the alert once set , please create a document outlying what m",
+        "message_refs": [
+          "exchange:114b92997bb01c509979f7256882032a"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "analyse bsalertbot codebase the scheduler is not sending the alert",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to  recorded this reusable item: For the cloud server to forward traffic to external clients (not just to itself), you must enable `GatewayPorts`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "subagents",
+      "source": {
+        "conversation_date": "2025-11-08",
+        "conversation_title": "using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to ",
+        "message_refs": [
+          "exchange:d7a6235c7c944671bd1a74812ef7521d"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "For the cloud server to forward traffic to external clients",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to  recorded this reusable item: `-N`: Do not execute a remote command. This is useful for just forwarding ports.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "subagents",
+      "source": {
+        "conversation_date": "2025-11-08",
+        "conversation_title": "using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to ",
+        "message_refs": [
+          "exchange:d7a6235c7c944671bd1a74812ef7521d"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "constraint",
+        "guardrail",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "-N: Do not execute a remote command. This is useful",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    },
+    {
+      "body": "Historical windsurf session using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to  recorded this reusable item: For a truly production-grade setup, you would run this `autossh` command as a `systemd` service on your home PC to ensure it starts on boot and is always running.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "subagents",
+      "source": {
+        "conversation_date": "2025-11-08",
+        "conversation_title": "using your agents research on connecting a tunnel between a home pc and a server on the cloud, the objective will be to ",
+        "message_refs": [
+          "exchange:d7a6235c7c944671bd1a74812ef7521d"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "historical-session",
+        "user-preference",
+        "windsurf",
+        "workflow"
+      ],
+      "title": "For a truly production-grade setup, you would run this autossh",
+      "type": "user_preference",
+      "why": "User preferences should shape future agent behavior across sessions."
+    },
+    {
+      "body": "Historical windsurf session use the credentials in rsync to get a list all the folders in the google drive , name , and ID .  check bsvmadmin, creat recorded this reusable item: python3 resolve_config_conflicts.py --config-path /path/to/config.json --backup-dir /path/to/backups",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "bsvmadminbot",
+      "source": {
+        "conversation_date": "2026-01-08",
+        "conversation_title": "use the credentials in rsync to get a list all the folders in the google drive , name , and ID .  check bsvmadmin, creat",
+        "message_refs": [
+          "exchange:80dd89bf16c377bf168f5cba9d342768"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "command",
+        "historical-session",
+        "operator-note",
+        "windsurf"
+      ],
+      "title": "python3 resolveconfigconflicts.py --config-path /path/to/config.json --backup-dir /pa...",
+      "type": "command",
+      "why": "Reusable commands can help future agents operate the project safely."
+    },
+    {
+      "body": "Historical windsurf session Right now the codebase is single-emulator per process: settings.VM_SERIAL is a single string, and the automation loop as recorded this reusable item: Config surface: replace singular VM_SERIAL with a list/map of workers \u2192 serials (and per-worker ADB paths if needed). Allow WORKER_ID to be set per loop instance internally rather than per process.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Windsurf",
+      "source": {
+        "conversation_date": "2025-12-07",
+        "conversation_title": "Right now the codebase is single-emulator per process: settings.VM_SERIAL is a single string, and the automation loop as",
+        "message_refs": [
+          "exchange:6b54601910b57fc25f8f75727dceb1b7"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "environment",
+        "historical-session",
+        "setup",
+        "windsurf"
+      ],
+      "title": "Config surface: replace singular VMSERIAL with a list/map of workers",
+      "type": "environment",
+      "why": "Environment facts prevent setup drift and wrong-path command execution."
+    },
+    {
+      "body": "Historical windsurf session how hard is it to have google drive instaled in linux recorded this reusable item: user: rclone is a very powerful command-line tool that can sync your files. It's extremely flexible but requires some comfort with the terminal. and google drive configuration step by step",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "linux",
+      "source": {
+        "conversation_date": "2025-11-17",
+        "conversation_title": "how hard is it to have google drive instaled in linux",
+        "message_refs": [
+          "exchange:7759c3f864db561364a28dcdb8e4e392"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "environment",
+        "historical-session",
+        "setup",
+        "windsurf"
+      ],
+      "title": "user: rclone is a very powerful command-line tool that can",
+      "type": "environment",
+      "why": "Environment facts prevent setup drift and wrong-path command execution."
+    },
+    {
+      "body": "Historical windsurf session how to list inside th container /home/node/.openclaw/workspace/ recorded this reusable item: system: To list the contents of the `/home/node/.openclaw/workspace/` directory inside a Docker container, you'll need to use the `docker exec` command. This command allows you to run commands inside a running container.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Windsurf",
+      "source": {
+        "conversation_date": "2026-02-13",
+        "conversation_title": "how to list inside th container /home/node/.openclaw/workspace/",
+        "message_refs": [
+          "exchange:b0d718979c9e277a91a601f86835c448"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "environment",
+        "file-path",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "system: To list the contents of the /home/node/.openclaw/workspace/ directory inside",
+      "type": "file_path",
+      "why": "File paths are useful only when they identify durable project locations."
+    },
+    {
+      "body": "Historical windsurf session how to list inside th container /home/node/.openclaw/workspace/ recorded this reusable item: This command will output the list of files and directories within `/home/node/.openclaw/workspace/` directly to your terminal.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Windsurf",
+      "source": {
+        "conversation_date": "2026-02-13",
+        "conversation_title": "how to list inside th container /home/node/.openclaw/workspace/",
+        "message_refs": [
+          "exchange:b0d718979c9e277a91a601f86835c448"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "environment",
+        "file-path",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "This command will output the list of files and directories",
+      "type": "file_path",
+      "why": "File paths are useful only when they identify durable project locations."
+    },
+    {
+      "body": "Historical windsurf session create an agent using this standar he function will be to create changelogs, the file should always be changelog_TIMESTA recorded this reusable item: user: /root/bs_alert_bot/USER_GUIDE.md update to explain also the warningon and warningoff command as well as the generatebanner for th telegram side",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "bs_alert_bot",
+      "source": {
+        "conversation_date": "2025-11-15",
+        "conversation_title": "create an agent using this standar he function will be to create changelogs, the file should always be changelog_TIMESTA",
+        "message_refs": [
+          "exchange:4e9b587b848622ed2307e75f0319e0da"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "environment",
+        "file-path",
+        "historical-session",
+        "windsurf"
+      ],
+      "title": "user: /root/bsalertbot/USERGUIDE.md update to explain also the warningon and warningoff",
+      "type": "file_path",
+      "why": "File paths are useful only when they identify durable project locations."
+    }
+  ],
+  "possible_conflicts": []
+}

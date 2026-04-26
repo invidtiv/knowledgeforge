@@ -1,0 +1,1004 @@
+{
+  "conversation_summary": {
+    "date": "2026-04-24",
+    "key_takeaways": [
+      "Historical session candidates remain current_truth=false and need repo confirmation.",
+      "Credential-like lines, private-key material, phone-number-like values, and noisy traces were skipped.",
+      "Generated 40 reusable candidate card(s) from 1252 session file(s)."
+    ],
+    "projects_detected": [
+      "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "c--Users-tiaz-Desktop-AiVisibility",
+      "c--Users-tiaz-Desktop-Scraprunbot",
+      "c--Users-tiaz-Desktop-Github-tensorflowcourse",
+      "C--Users-tiaz-Desktop-Github-Famelga",
+      "c--Users-tiaz-Desktop-BSLauncher",
+      "c--Users-tiaz-Desktop-veritas-kanban-android",
+      "C--Users-tiaz-Desktop-DevOps-bsdev-bsdev",
+      "C--Users-tiaz-Desktop-AndroidSynchApp",
+      "c--Users-tiaz-Desktop-Github-fill-map"
+    ],
+    "summary": "Scanned 1252 claude JSONL session file(s) from C:\\Users\\tiaz\\.claude\\projects and wrote only low-trust atomic memory candidates. Raw transcript text was not embedded wholesale and no KnowledgeForge import was attempted.",
+    "title": "Claude historical session atomic extraction"
+  },
+  "discarded_noise": [
+    {
+      "content_type": "sentences_skipped_as_noise",
+      "count": 138,
+      "reason": "count"
+    },
+    {
+      "content_type": "sentences_skipped_for_secret_risk",
+      "count": 87,
+      "reason": "count"
+    },
+    {
+      "content_type": "sessions_without_durable_candidates",
+      "count": 312,
+      "reason": "count"
+    }
+  ],
+  "memory_cards": [
+    {
+      "body": "Historical claude session e2fc183b-d77c-4df9-b69e-58f7bd572b3f recorded this reusable item: Looking at the PRD's Definition of Done and the current state, the system is functionally complete for localhost MVP. The remaining unblocked improvements fall into these categories:",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "e2fc183b-d77c-4df9-b69e-58f7bd572b3f",
+        "message_refs": [
+          "exchange:d0c698674680745a985f0ea736970b05"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "acceptance",
+        "claude",
+        "done-criteria",
+        "historical-session"
+      ],
+      "title": "Looking at the PRD's Definition of Done and the current",
+      "type": "definition_of_done",
+      "why": "Definitions of done help a future agent know when the task is actually complete."
+    },
+    {
+      "body": "Historical claude session 27d31039-5ae8-49da-a1f5-f1c7fbaa5a0a recorded this reusable item: Hand-off spec for WI #1 and WI #2. Explains why those items cannot be implemented here (with grep evidence), defines the exact schema split (`status` / `deliveryStatus` / `notificationError`), gives acceptance criteria for both work items, and describes the three new dispatcher-callable artifacts from this work.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github----clawteam",
+      "source": {
+        "conversation_date": "2026-04-11",
+        "conversation_title": "27d31039-5ae8-49da-a1f5-f1c7fbaa5a0a",
+        "message_refs": [
+          "exchange:de3db117072f4b6aa146fde99266f98d"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "acceptance",
+        "claude",
+        "done-criteria",
+        "historical-session"
+      ],
+      "title": "Hand-off spec for WI 1 and WI 2. Explains why",
+      "type": "definition_of_done",
+      "why": "Definitions of done help a future agent know when the task is actually complete."
+    },
+    {
+      "body": "Historical claude session bc1a5c90-4e55-46f7-8ae2-5ac933a43d30 recorded this reusable item: Test Objective:** Verify ImageCaptureModal component creation and frontend build success",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "c--Users-tiaz-Desktop-bsemulatorcontroler",
+      "source": {
+        "conversation_date": "2026-02-25",
+        "conversation_title": "bc1a5c90-4e55-46f7-8ae2-5ac933a43d30",
+        "message_refs": [
+          "exchange:6c8b8bdf2072e1c74efa374a09d6291e"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "claude",
+        "historical-session",
+        "intent",
+        "objective"
+      ],
+      "title": "Test Objective: Verify ImageCaptureModal component creation and frontend build success",
+      "type": "objective",
+      "why": "Objectives preserve the intended outcome without importing the whole conversation."
+    },
+    {
+      "body": "Historical claude session 5fc8853d-b4ca-499f-854f-1721f2599bf7 recorded this reusable item: After all tasks complete and verified:",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-remotionPipeline--claude-worktrees-practical-antonelli",
+      "source": {
+        "conversation_date": "2026-04-18",
+        "conversation_title": "5fc8853d-b4ca-499f-854f-1721f2599bf7",
+        "message_refs": [
+          "exchange:1551001f671b6af684c9c9501fffe466"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "After all tasks complete and verified",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 8caa7e62-4afe-41e2-a908-2d353cc80c4b recorded this reusable item: The correct approach is to simulate it by testing the lock predicate directly: call the function after the row has been mutated by \"another device\" to a different `updated_at` \u2014 but the row must NOT be currently active (status='reserved' and not expired) otherwise it gets blocked by the `building_reserved` path first.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-fill-map--claude-worktrees-nifty-jones",
+      "source": {
+        "conversation_date": "2026-04-17",
+        "conversation_title": "8caa7e62-4afe-41e2-a908-2d353cc80c4b",
+        "message_refs": [
+          "exchange:2328e4d3aeb59cef6d223da10aa873ee"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "The correct approach is to simulate it by testing the",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session e4cf33b5-b4b0-481b-ba0c-f7bf4d09096e recorded this reusable item: Run `npx remotion versions --log=verbose` to see the path of the modules resolved.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-remotionPipeline",
+      "source": {
+        "conversation_date": "2026-04-17",
+        "conversation_title": "e4cf33b5-b4b0-481b-ba0c-f7bf4d09096e",
+        "message_refs": [
+          "exchange:8f199235dfbf1d466862ea031997836b"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Run npx remotion versions --log=verbose to see the path of",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a recorded this reusable item: Lab-03 already has all three! The grep for `^## Common Pitfalls` failed because it's in a Callout. Let me re-examine all files properly.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "c--Users-tiaz-Desktop-Github-tensorflowcourse",
+      "source": {
+        "conversation_date": "2026-04-17",
+        "conversation_title": "3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a",
+        "message_refs": [
+          "exchange:c9ae8d47052c98a48b1f2bfc9e14d8d8"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Lab-03 already has all three! The grep for ^ Common",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a recorded this reusable item: Lab 16 M04 \u2014 mixed precision speedup range (we fixed memory range; speedup claim could also use a confidence interval)",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "c--Users-tiaz-Desktop-Github-tensorflowcourse",
+      "source": {
+        "conversation_date": "2026-04-17",
+        "conversation_title": "3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a",
+        "message_refs": [
+          "exchange:e250e24a927f56d4e6203e0ca31850ba"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Lab 16 M04 \u2014 mixed precision speedup range (we fixed",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 8caa7e62-4afe-41e2-a908-2d353cc80c4b recorded this reusable item: ### Fix 2: Write a failure record before resetting `prepare_unverified` accounts",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-fill-map--claude-worktrees-nifty-jones",
+      "source": {
+        "conversation_date": "2026-04-17",
+        "conversation_title": "8caa7e62-4afe-41e2-a908-2d353cc80c4b",
+        "message_refs": [
+          "exchange:18bafed343dc26bd837af1d56f558b38"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Fix 2: Write a failure record before resetting prepareunverified accounts",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a recorded this reusable item: Earlier we fixed the plain-SGD row (`0.8234` \u2192 `0.6547`). Now audit the rest of the example output block for internal consistency with the preceding Expected Output table.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "c--Users-tiaz-Desktop-Github-tensorflowcourse",
+      "source": {
+        "conversation_date": "2026-04-17",
+        "conversation_title": "3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a",
+        "message_refs": [
+          "exchange:bb0074fe824b11549543f264fa85e7fc"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Earlier we fixed the plain-SGD row (0.8234 \u2192 0.6547). Now",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a recorded this reusable item: Each of these files very likely has the content in `<Callout>` components or with emoji-prefixed headings (e.g., `## \u26a0\ufe0f Common Pitfalls`) that don't match plain `^## Common Pitfalls`. The content may already exist \u2014 just not under a grep-matchable heading.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "c--Users-tiaz-Desktop-Github-tensorflowcourse",
+      "source": {
+        "conversation_date": "2026-04-17",
+        "conversation_title": "3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a",
+        "message_refs": [
+          "exchange:3dca47919a6f0a995dae653fe565136b"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Each of these files very likely has the content in",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session e4cf33b5-b4b0-481b-ba0c-f7bf4d09096e recorded this reusable item: After all tasks complete and verified:",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-remotionPipeline",
+      "source": {
+        "conversation_date": "2026-04-17",
+        "conversation_title": "e4cf33b5-b4b0-481b-ba0c-f7bf4d09096e",
+        "message_refs": [
+          "exchange:ce96e3435ee8f5605ca32352b75672b3"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "After all tasks complete and verified",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a recorded this reusable item: \u274c NEEDS FIXES \u2014 list what must be fixed",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "c--Users-tiaz-Desktop-Github-tensorflowcourse",
+      "source": {
+        "conversation_date": "2026-04-16",
+        "conversation_title": "3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a",
+        "message_refs": [
+          "exchange:fd257885652277bb6aee5ba1b6fd4d1b"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "\u274c NEEDS FIXES \u2014 list what must be fixed",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a recorded this reusable item: Previous issues that should now be resolved:",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "c--Users-tiaz-Desktop-Github-tensorflowcourse",
+      "source": {
+        "conversation_date": "2026-04-16",
+        "conversation_title": "3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a",
+        "message_refs": [
+          "exchange:273351d251de8cc99f21a10ec0451ee7"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Previous issues that should now be resolved",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a recorded this reusable item: Errors that you ran into and how you fixed them",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "c--Users-tiaz-Desktop-Github-tensorflowcourse",
+      "source": {
+        "conversation_date": "2026-04-16",
+        "conversation_title": "3d7af3f4-6b4d-42f2-903c-560c9cd5ed5a",
+        "message_refs": [
+          "exchange:d28c5d57615e391164940e748838ed56"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Errors that you ran into and how you fixed them",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 6968bfa6-c9cf-4a22-9b22-f50908891fbb recorded this reusable item: 5. Not blocked by any external dependency",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-16",
+        "conversation_title": "6968bfa6-c9cf-4a22-9b22-f50908891fbb",
+        "message_refs": [
+          "exchange:a8671ac21fac4a51357024a8285458c4"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "5. Not blocked by any external dependency",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 516ff49c-94b8-4ee6-82b3-68c7d279a0fa recorded this reusable item: The highest-value work that is **not blocked by external dependencies** and **locally testable**:",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "516ff49c-94b8-4ee6-82b3-68c7d279a0fa",
+        "message_refs": [
+          "exchange:75336b618dd874f8190575df0c30d1e4"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "The highest-value work that is not blocked by external dependencies",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 5ac21229-7137-4edd-b04f-f2718822d88b recorded this reusable item: Show latest 5 unresolved alerts",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "c--Users-tiaz-Desktop-AiVisibility",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "5ac21229-7137-4edd-b04f-f2718822d88b",
+        "message_refs": [
+          "exchange:8694b8522d16171c23811a4e46fe4340"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Show latest 5 unresolved alerts",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session f8d40f5a-216c-436d-95d7-0dd4241c7b84 recorded this reusable item: Now let me look at what areas could use improvement that aren't blocked by external dependencies. Let me check backend code for potential hardening opportunities.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "f8d40f5a-216c-436d-95d7-0dd4241c7b84",
+        "message_refs": [
+          "exchange:25450fb7a5453d8575263b054a08ddcb"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Now let me look at what areas could use improvement",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session ff4b6619-920c-4430-a1eb-ce37883e0ce0 recorded this reusable item: Not blocked by any external dependency",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "ff4b6619-920c-4430-a1eb-ce37883e0ce0",
+        "message_refs": [
+          "exchange:20ff66c96c7590e6cab5c749268ce11d"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Not blocked by any external dependency",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 6c2bc365-4590-4207-91f6-6dcbcc3e49ac recorded this reusable item: Non-fatal thumbnail generation \u2014 upload never blocked by thumbnail failure",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "6c2bc365-4590-4207-91f6-6dcbcc3e49ac",
+        "message_refs": [
+          "exchange:5ca27f76be2a26f589f97672c94a3894"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Non-fatal thumbnail generation \u2014 upload never blocked by thumbnail failure",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 5222fa98-2fc2-4ff8-899c-0cef65a92b6f recorded this reusable item: Focused on test coverage gaps since all remaining feature work is blocked by external dependencies",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "5222fa98-2fc2-4ff8-899c-0cef65a92b6f",
+        "message_refs": [
+          "exchange:786f212c60c0936a52bfeeda2246272a"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Focused on test coverage gaps since all remaining feature work",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session ff4b6619-920c-4430-a1eb-ce37883e0ce0 recorded this reusable item: Exact next task**: All remaining items are blocked by external dependencies or are production-readiness work. Next high-value tasks to consider:",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "ff4b6619-920c-4430-a1eb-ce37883e0ce0",
+        "message_refs": [
+          "exchange:4c827f9ef0485f054ea6497bc39a40b5"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Exact next task: All remaining items are blocked by external",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session f8d40f5a-216c-436d-95d7-0dd4241c7b84 recorded this reusable item: Blockers:** None discovered. All remaining tasks.md items remain blocked by external dependencies or production readiness.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "f8d40f5a-216c-436d-95d7-0dd4241c7b84",
+        "message_refs": [
+          "exchange:fdd34599f3fbae69dcb5719ab50bac73"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Blockers: None discovered. All remaining tasks.md items remain blocked by",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session fb0d01d2-8ac5-449d-aa61-3c0d787ea115 recorded this reusable item: All tasks.md items are done** except those blocked by external dependencies",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "fb0d01d2-8ac5-449d-aa61-3c0d787ea115",
+        "message_refs": [
+          "exchange:345675f5e9b8f49a67c6ba923804014a"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "All tasks.md items are done except those blocked by external",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 15de45d5-e5a2-44e1-bbd3-708f157c1407 recorded this reusable item: All remaining work is blocked by external dependencies:",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-15",
+        "conversation_title": "15de45d5-e5a2-44e1-bbd3-708f157c1407",
+        "message_refs": [
+          "exchange:209ae7ae39e690e4fb7ae6c56ab88976"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "All remaining work is blocked by external dependencies",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session cf7f596e-485d-4d44-88f1-468da6a98971 recorded this reusable item: vi.mocked(api.listDraftsPaginated).mockResolvedValue({ items: [draft], total: 1, skip: 0, limit: 20 });",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "cf7f596e-485d-4d44-88f1-468da6a98971",
+        "message_refs": [
+          "exchange:12906ced3ba9896d08cd7a1da9d0a82c"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "vi.mocked(api.listDraftsPaginated).mockResolvedValue({ items: [draft], total: 1, skip...",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 751c23b1-e49d-436b-8fdf-d57a2257ccc5 recorded this reusable item: vi.mocked(api.listDraftsPaginated).mockResolvedValue({ items: [d1, d2], total: 2, skip: 0, limit: 20 });",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "751c23b1-e49d-436b-8fdf-d57a2257ccc5",
+        "message_refs": [
+          "exchange:3ade5a3831058090bc724eb2db93af35"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "vi.mocked(api.listDraftsPaginated).mockResolvedValue({ items: [d1, d2], total: 2, ski...",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session cc30229b-746c-4f0c-af89-49644799b88f recorded this reusable item: Where `mockResolvedValue([...])` was used, change to `mockResolvedValue({ items: [...], total: N, skip: 0, limit: 20 })`",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "cc30229b-746c-4f0c-af89-49644799b88f",
+        "message_refs": [
+          "exchange:5e4f05f930bf1a1857fca31930e06d79"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Where mockResolvedValue([...]) was used, change to mockResolvedValue({ items: [...],...",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session c711570e-e4a6-4646-9796-1e43c798449c recorded this reusable item: Warnings**: All tasks.md checklist items remain blocked by external services",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "c711570e-e4a6-4646-9796-1e43c798449c",
+        "message_refs": [
+          "exchange:ea2614ff3628e82ea37b893618020d2d"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Warnings: All tasks.md checklist items remain blocked by external services",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 271b58e1-ba62-4d89-9aac-beafb20775aa recorded this reusable item: Warnings**: All remaining explicit tasks are blocked by external dependencies",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "271b58e1-ba62-4d89-9aac-beafb20775aa",
+        "message_refs": [
+          "exchange:d46cb47bbd2ad87a0c911f0e2184d5e6"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Warnings: All remaining explicit tasks are blocked by external dependencies",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 1a20e6a3-be11-418e-ad26-8db9c7fe1de9 recorded this reusable item: The project is very mature at 77 sessions. Recent sessions (74-77) have been doing polish: accessibility, DRY extraction, page enhancements. All core MVP features are complete. Remaining tasks.md items are blocked by external dependencies.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "1a20e6a3-be11-418e-ad26-8db9c7fe1de9",
+        "message_refs": [
+          "exchange:429827d1d65abb651a0633951ad883fe"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "The project is very mature at 77 sessions. Recent sessions",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session c363b45c-22ff-4350-86fd-1b183db81139 recorded this reusable item: Risks:** All remaining PRD features are blocked by external dependencies",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "c363b45c-22ff-4350-86fd-1b183db81139",
+        "message_refs": [
+          "exchange:ffd6fb5ea8b33128b8b6dfe69ab6e616"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Risks: All remaining PRD features are blocked by external dependencies",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 1a20e6a3-be11-418e-ad26-8db9c7fe1de9 recorded this reusable item: Now let me think about what the next highest-value task is. The system is feature-complete for MVP. All remaining tasks.md items are blocked by external dependencies. Recent sessions have done accessibility, DRY, and UX polish.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "1a20e6a3-be11-418e-ad26-8db9c7fe1de9",
+        "message_refs": [
+          "exchange:42d2528686e37e465ee62cd76926f2fa"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Now let me think about what the next highest-value task",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session d99f86c5-e884-4d46-a83a-de2026470175 recorded this reusable item: None new. All remaining work still blocked by: OpenAI key, SMTP, social APIs, portrait photo",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "d99f86c5-e884-4d46-a83a-de2026470175",
+        "message_refs": [
+          "exchange:9abeb4f2faa688d59fe504bbe9ac6bbb"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "None new. All remaining work still blocked by: OpenAI key",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 9ab216f7-bb21-4506-b976-54f6c3f70346 recorded this reusable item: None new. All remaining items still blocked by external dependencies.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "9ab216f7-bb21-4506-b976-54f6c3f70346",
+        "message_refs": [
+          "exchange:4eb8e5e874003b57e3c7af9e8584ae1f"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "None new. All remaining items still blocked by external dependencies",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 0e0db909-8ab8-4656-ba96-42d815237749 recorded this reusable item: Mock `api` methods using `vi.mocked(api.listSettings).mockResolvedValue(...)`",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "0e0db909-8ab8-4656-ba96-42d815237749",
+        "message_refs": [
+          "exchange:6b046f5821326038fff79e0423fd2b52"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "claude",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Mock api methods using vi.mocked(api.listSettings).mockResolvedValue(...)",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical claude session 990e3ae7-ec81-4aa4-826f-df327ea4d6ba recorded this reusable item: Looking at the \"NEXT STEP\" section and follow-up items, everything remaining is blocked by external deps:",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "990e3ae7-ec81-4aa4-826f-df327ea4d6ba",
+        "message_refs": [
+          "exchange:6923b2bd4f63d3b5b4177e8769bfdc0f"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Looking at the \"NEXT STEP\" section and follow-up items, everything",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session c363b45c-22ff-4350-86fd-1b183db81139 recorded this reusable item: Let me assess what would be the highest-value next step that isn't blocked by externals. Let me check what the router and pages look like for any missing lazy loading or potential improvements.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "c363b45c-22ff-4350-86fd-1b183db81139",
+        "message_refs": [
+          "exchange:98ddcae5494e5e44599337ce1999d609"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Let me assess what would be the highest-value next step",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    },
+    {
+      "body": "Historical claude session 5fc5450d-b558-4a45-956f-8d3a3b8d62bb recorded this reusable item: Exact next task:** All PRD-critical features complete. Remaining items blocked by external dependencies (OpenAI key, SMTP, real social APIs, portrait photo). Next unblocked work could be: production deployment prep (docker-compose, env templates), mobile responsiveness audit, or API documentation polish.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "C--Users-tiaz-Desktop-Github-LigthWarrior",
+      "source": {
+        "conversation_date": "2026-04-14",
+        "conversation_title": "5fc5450d-b558-4a45-956f-8d3a3b8d62bb",
+        "message_refs": [
+          "exchange:ae1bfe31939a1d05f0ea72f3151026c6"
+        ]
+      },
+      "status": "failed",
+      "tags": [
+        "avoid-repeat",
+        "claude",
+        "failed-attempt",
+        "historical-session"
+      ],
+      "title": "Exact next task: All PRD-critical features complete. Remaining items blocked",
+      "type": "failed_attempt",
+      "why": "Failed attempts keep future agents from repeating known unproductive paths."
+    }
+  ],
+  "possible_conflicts": []
+}

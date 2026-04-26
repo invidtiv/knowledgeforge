@@ -1,0 +1,126 @@
+{
+  "conversation_summary": {
+    "title": "T3 Code Android UI modularization, Hilt migration, and Material polish pass",
+    "date": "2026-04-26",
+    "projects_detected": ["t3code-android"],
+    "summary": "Reviewed the t3code-android Compose codebase, identified UI gaps (ASCII glyph placeholders, monolithic 1.2k-line T3CodeApp.kt, dark-mode status bar invisibility, FlowRow filter chips, no per-screen UiState, manual ViewModel factory), then dispatched eight phased coder agents to land Material icons, status bar fix, LazyRow chips, project-color avatars + relative timestamps, file split into ui/{theme,nav,screens,components,dialogs}/, sealed ChatBrowserUiState/ChatDetailUiState, and Hilt 2.52 DI. Verified by gradle compile/test/assembleDebug and a fresh ADB screenshot from the physical device. Committed and pushed as 5dac640.",
+    "key_takeaways": [
+      "Hilt 2.52 with KSP (no kapt) integrates cleanly with Kotlin 2.0.21 and AGP 8.7.x in single-module Compose apps.",
+      "OrchestrationThreadShellDto carries timestamps but no messages list, so chat-list previews require thread-detail loading.",
+      "WindowCompat-driven appearance flags should replace styles.xml hardcoded windowLightStatusBar to support dynamic theming.",
+      "Splitting a monolithic Compose file along screens/components/dialogs/theme/nav boundaries needs explicit private→internal visibility audits."
+    ]
+  },
+  "memory_cards": [
+    {
+      "type": "decision",
+      "project": "t3code-android",
+      "title": "Hilt DI uses 2.52 + KSP, no kapt",
+      "body": "DI migration uses com.google.dagger:hilt-android:2.52 with the Hilt Gradle plugin and the KSP processor (ksp 'com.google.dagger:hilt-compiler:2.52'). Do NOT add kotlin-kapt — Hilt 2.52 is fully KSP-compatible at Kotlin 2.0.21 / KSP 2.0.21-1.0.28 / AGP 8.7.x. Compose ViewModel injection uses androidx.hilt:hilt-navigation-compose:1.2.0 and hiltViewModel() in @AndroidEntryPoint activities.",
+      "why": "Picks the supported processor pipeline for the project's existing toolchain and avoids the kapt slowdown.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {"conversation_title": "T3 Code Android UI modularization, Hilt migration, and Material polish pass", "conversation_date": "2026-04-26", "message_refs": []},
+      "tags": ["hilt", "dependency-injection", "ksp", "compose"]
+    },
+    {
+      "type": "decision",
+      "project": "t3code-android",
+      "title": "AppContainer preserved as Hilt-provided facade rather than decomposed",
+      "body": "AppContainer (the manual DI graph holding okhttp, room db, repositories, use cases, connection manager) is kept intact and exposed via @Module @InstallIn(SingletonComponent::class) object AppModule with a single @Provides @Singleton fun provideAppContainer(@ApplicationContext): AppContainer. T3CodeAndroidApplication uses @HiltAndroidApp + @Inject lateinit var container; MainViewModel injects AppContainer directly. Decomposition into per-dependency providers is deferred.",
+      "why": "Minimal-risk migration that lets Hilt own the lifecycle without rewriting the dependency graph or breaking the connectionManager.start() call in onCreate.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {"conversation_title": "T3 Code Android UI modularization, Hilt migration, and Material polish pass", "conversation_date": "2026-04-26", "message_refs": []},
+      "tags": ["hilt", "appcontainer", "architecture"]
+    },
+    {
+      "type": "decision",
+      "project": "t3code-android",
+      "title": "UI package layout and sealed UiState pattern",
+      "body": "ui/T3CodeApp.kt is the thin entry point holding only T3CodeApp + T3CodeScaffold + MainContent. Everything else lives under ui/theme/, ui/nav/, ui/screens/{browser,detail}/, ui/components/, ui/dialogs/. Cross-package composables are 'internal' (not 'private'). Per-screen sealed UiState lives next to its screen: ChatBrowserUiState (NoRemotes/Empty/Content) and ChatDetailUiState (Loading/Content) are derived from MainUiState via internal extension converters toChatBrowserUiState() / toChatDetailUiState(remoteId, threadId). MainUiState remains the single source of truth in MainViewModel.",
+      "why": "Keeps the ViewModel's state model unchanged while letting screens consume exhaustive when expressions and avoiding null/empty checks scattered through the UI.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {"conversation_title": "T3 Code Android UI modularization, Hilt migration, and Material polish pass", "conversation_date": "2026-04-26", "message_refs": []},
+      "tags": ["compose", "ui-state", "modularization", "sealed-interface"]
+    },
+    {
+      "type": "constraint",
+      "project": "t3code-android",
+      "title": "ChatSearchResult.thread has no messages list",
+      "body": "ChatSearchResult.thread is OrchestrationThreadShellDto, NOT OrchestrationThreadDto. The shell variant exposes id, projectId, title, updatedAt, latestUserMessageAt, hasPendingApprovals, hasPendingUserInput, latestTurn — but it does not carry the messages collection. Showing a last-message text preview on the chat browser row therefore requires fetching the thread detail (runtime.threadDetails[threadId]?.thread.messages) which is only loaded after thread selection.",
+      "why": "Prevents wasted attempts to wire a 'last message preview' from the search result alone.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {"conversation_title": "T3 Code Android UI modularization, Hilt migration, and Material polish pass", "conversation_date": "2026-04-26", "message_refs": []},
+      "tags": ["data-model", "chat-browser", "orchestration-dto"]
+    },
+    {
+      "type": "resolution",
+      "project": "t3code-android",
+      "title": "Dark-mode status bar contrast fix via WindowCompat",
+      "body": "Symptom: status bar icons invisible (dark-on-dark) when app dark theme active. Cause: app/src/main/res/values/styles.xml hardcoded android:windowLightStatusBar=true and android:windowLightNavigationBar=true. Fix: remove both from styles.xml and inside the T3CodeApp composable add a SideEffect that calls WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDark (and the matching navigation bar flag). useDark is computed from the active ThemeMode preference.",
+      "why": "Lets system bar icons follow the user's theme choice instead of being permanently light.",
+      "status": "verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {"conversation_title": "T3 Code Android UI modularization, Hilt migration, and Material polish pass", "conversation_date": "2026-04-26", "message_refs": []},
+      "tags": ["compose", "theme", "system-ui", "dark-mode"]
+    },
+    {
+      "type": "command",
+      "project": "t3code-android",
+      "title": "Compose+Hilt verification trio",
+      "body": "After UI / DI changes run all three from project root: ./gradlew :app:compileDebugKotlin && ./gradlew :app:testDebugUnitTest && ./gradlew :app:assembleDebug. The third step is required because the Hilt annotation processor only fires during the dex/assemble path; compileDebugKotlin alone will not surface missing-binding or scope-mismatch errors.",
+      "why": "Avoids shipping Hilt graphs that compile in Kotlin but fail at app startup.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {"conversation_title": "T3 Code Android UI modularization, Hilt migration, and Material polish pass", "conversation_date": "2026-04-26", "message_refs": []},
+      "tags": ["gradle", "verification", "hilt"]
+    },
+    {
+      "type": "decision",
+      "project": "t3code-android",
+      "title": "Use AutoMirrored Material icons for RTL correctness",
+      "body": "When migrating from ASCII Glyph placeholders to Material Icons, prefer Icons.AutoMirrored.Filled.* variants for direction-sensitive icons (Send, Chat). Non-directional icons stay on Icons.Default.* (Menu, Add, Refresh, Close, Search, Settings, ExpandLess/More, AttachFile, Stop, ArrowDropDown). Dependency: androidx.compose.material:material-icons-extended:1.7.6 alongside material3.",
+      "why": "Material3 deprecated direction-fixed Send/Chat icons; AutoMirrored variants flip correctly under RTL locales without manual handling.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {"conversation_title": "T3 Code Android UI modularization, Hilt migration, and Material polish pass", "conversation_date": "2026-04-26", "message_refs": []},
+      "tags": ["material-icons", "rtl", "compose"]
+    },
+    {
+      "type": "user_preference",
+      "project": "t3code-android",
+      "title": "Phased orchestrator workflow with per-phase build verification",
+      "body": "User wants the master orchestrator to break large UI/architecture work into discrete phases, dispatch ONE coder subagent per phase with self-contained instructions (problem, exact file paths, mapping tables, verification commands), and wait for build verification (./gradlew compileDebugKotlin or fuller commands) before advancing. The coder agent should escalate to the stuck agent on unresolvable build errors rather than introduce shims, fallbacks, or commented-out code. Final integration uses gradle assembleDebug + ADB install + device screenshot for visual confirmation, since the project requires real USB-connected devices, not emulators.",
+      "why": "Keeps the orchestrator's 200k context for planning while each subagent gets a focused clean context, and physical-device verification is required because ESP32 USB keyboard work cannot use emulators.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {"conversation_title": "T3 Code Android UI modularization, Hilt migration, and Material polish pass", "conversation_date": "2026-04-26", "message_refs": []},
+      "tags": ["workflow", "orchestrator", "subagents", "verification"]
+    }
+  ],
+  "possible_conflicts": [],
+  "discarded_noise": [
+    "ASCII-glyph mapping table (one-shot mechanical task, lives in commit 5dac640).",
+    "FlowRow→LazyRow swap (mechanical Compose change, no durable lesson).",
+    "Per-file extraction inventory from the split phase (commit history is authoritative)."
+  ]
+}

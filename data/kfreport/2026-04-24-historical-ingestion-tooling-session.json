@@ -1,0 +1,154 @@
+{
+  "conversation_summary": {
+    "title": "KnowledgeForge historical ingestion tooling and KFreport correction",
+    "date": "2026-04-24",
+    "projects_detected": [
+      "KnowledgeForge"
+    ],
+    "summary": "Built and verified safe KnowledgeForge tooling for historical-session inventory, bounded extraction prompt batches, and Codex SQLite export, then corrected the objective to atomic memory-card ingestion rather than full transcript ingestion.",
+    "key_takeaways": [
+      "Historical AI sessions should produce durable atomic KnowledgeForge memory cards, not raw transcript truth.",
+      "The local Windows CLI can import extraction JSON through `knowledgeforge memory import-json` when `PYTHONPATH=src` is set.",
+      "The new `knowledgeforge historical` CLI group provides inventory, batch prompt generation, and Codex SQLite export surfaces."
+    ]
+  },
+  "memory_cards": [
+    {
+      "type": "user_preference",
+      "project": "KnowledgeForge",
+      "title": "Historical ingestion should create atomic cards, not full conversation truth",
+      "body": "The user explicitly wants KnowledgeForge historical-session ingestion to extract compact durable memory cards rather than ingesting full raw conversations as current truth.",
+      "why": "This prevents old transcript noise from poisoning retrieval while preserving reusable decisions, constraints, fixes, TODOs, schemas, commands, and environment facts.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {
+        "conversation_title": "KnowledgeForge historical ingestion tooling and KFreport correction",
+        "conversation_date": "2026-04-24",
+        "message_refs": []
+      },
+      "tags": [
+        "historical-ingestion",
+        "atomic-memory",
+        "user-rule"
+      ]
+    },
+    {
+      "type": "security_rule",
+      "project": "KnowledgeForge",
+      "title": "Historical memory ingestion must exclude secrets and credential-bearing logs",
+      "body": "Never store secrets, tokens, passwords, private keys, cookies, phone numbers, full env files, or raw credential-bearing logs in KnowledgeForge memory cards.",
+      "why": "Historical archives can contain sensitive material; ingestion must stop or skip noisy/leaky material rather than preserving secrets in retrieval.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {
+        "conversation_title": "KnowledgeForge historical ingestion tooling and KFreport correction",
+        "conversation_date": "2026-04-24",
+        "message_refs": []
+      },
+      "tags": [
+        "security",
+        "historical-ingestion",
+        "secret-handling"
+      ]
+    },
+    {
+      "type": "constraint",
+      "project": "KnowledgeForge",
+      "title": "Historical cards default to non-current truth unless verified",
+      "body": "Historical or inferred information should not be marked current truth unless current repo state, test output, or explicit user confirmation proves it. Otherwise use current_truth=false and usually needs_repo_confirmation=true.",
+      "why": "This keeps old or inferred session knowledge useful for orientation without making it implementation authority.",
+      "status": "active_verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {
+        "conversation_title": "KnowledgeForge historical ingestion tooling and KFreport correction",
+        "conversation_date": "2026-04-24",
+        "message_refs": []
+      },
+      "tags": [
+        "trust-model",
+        "historical-ingestion",
+        "current-truth"
+      ]
+    },
+    {
+      "type": "resolution",
+      "project": "KnowledgeForge",
+      "title": "Historical ingestion tooling CLI was added and verified",
+      "body": "The repo now has a `knowledgeforge historical` CLI group with `inventory`, `batch-prompts`, and `codex-sqlite-export` commands, plus tests for source inventory, prompt batching, Codex SQLite export, and existing ingest queue behavior.",
+      "why": "These tools provide the safer operator path needed before historical-session pilot extraction and adapter expansion.",
+      "status": "verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {
+        "conversation_title": "KnowledgeForge historical ingestion tooling and KFreport correction",
+        "conversation_date": "2026-04-24",
+        "message_refs": []
+      },
+      "tags": [
+        "cli",
+        "tooling",
+        "verified-tests"
+      ]
+    },
+    {
+      "type": "todo",
+      "project": "KnowledgeForge",
+      "title": "Pilot atomic extraction before full historical ingestion",
+      "body": "Next ingestion step is to run a reviewed pilot that extracts durable cards from a small session batch, audits the cards for leakage/noise/status correctness, then expands in checkpoints. Unsupported Windsurf, Antigravity, and Kimi stores need adapters before their durable facts can be extracted.",
+      "why": "The user wants historical data, but only as useful atomic memory cards with audit gates and no secret leakage.",
+      "status": "open_unverified",
+      "confidence": "high",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "source": {
+        "conversation_title": "KnowledgeForge historical ingestion tooling and KFreport correction",
+        "conversation_date": "2026-04-24",
+        "message_refs": []
+      },
+      "tags": [
+        "pilot",
+        "adapter-work",
+        "historical-ingestion"
+      ]
+    },
+    {
+      "type": "environment",
+      "project": "KnowledgeForge",
+      "title": "Windows session needs PYTHONPATH=src for local KnowledgeForge CLI",
+      "body": "In the Windows Codex workspace, `python -m knowledgeforge.interfaces.cli` resolves the intended local clone when `PYTHONPATH=src` is set; without it, Python resolved an older `rag_obsidian_ai\\knowledgeforge` checkout earlier in the session.",
+      "why": "Using the wrong import path can make CLI commands fail or operate against stale code/config while working on KnowledgeForge.",
+      "status": "verified",
+      "confidence": "high",
+      "current_truth": true,
+      "needs_repo_confirmation": false,
+      "source": {
+        "conversation_title": "KnowledgeForge historical ingestion tooling and KFreport correction",
+        "conversation_date": "2026-04-24",
+        "message_refs": []
+      },
+      "tags": [
+        "windows",
+        "pythonpath",
+        "cli"
+      ]
+    }
+  ],
+  "possible_conflicts": [],
+  "discarded_noise": [
+    {
+      "content_type": "command output",
+      "reason": "Long inventory listings and test output were not stored as cards."
+    },
+    {
+      "content_type": "transient environment confusion",
+      "reason": "Only the reusable import-path fact was preserved."
+    }
+  ]
+}

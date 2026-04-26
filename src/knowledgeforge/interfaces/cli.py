@@ -24,6 +24,7 @@ semantic_app = typer.Typer(help="Manage curated semantic memory")
 memory_app = typer.Typer(help="Manage extracted structured memory cards")
 queue_app = typer.Typer(help="Deterministic ingestion queue")
 config_app = typer.Typer(help="Configuration management")
+historical_app = typer.Typer(help="Historical session ingestion tooling")
 
 app.add_typer(index_app, name="index")
 app.add_typer(discoveries_app, name="discoveries")
@@ -31,6 +32,7 @@ app.add_typer(semantic_app, name="semantic")
 app.add_typer(memory_app, name="memory")
 app.add_typer(queue_app, name="queue")
 app.add_typer(config_app, name="config")
+app.add_typer(historical_app, name="historical")
 
 
 def _configure_logging() -> None:
@@ -56,6 +58,110 @@ def _get_engine():
     from knowledgeforge.core.engine import KnowledgeForgeEngine
     config = KnowledgeForgeConfig.load_config()
     return KnowledgeForgeEngine(config)
+
+
+# === HISTORICAL INGESTION ===
+
+@historical_app.command("inventory")
+def historical_inventory(
+    output: str = typer.Argument(..., help="Output JSON path"),
+    host: str = typer.Option("local", "--host", help="Inventory host label"),
+    source: list[str] = typer.Option([], "--source", help="agent=path=adapter source spec"),
+):
+    """Write a metadata-only inventory of historical session sources."""
+    from knowledgeforge.ingestion.source_inventory import SourceSpec, write_inventory
+
+    sources = [_parse_historical_source_spec(item) for item in source]
+    payload = write_inventory(sources, output, host=host)
+    console.print_json(data=payload)
+
+
+@historical_app.command("batch-prompts")
+def historical_batch_prompts(
+    source_dir: str = typer.Argument(..., help="Directory containing historical JSONL sessions"),
+    output_dir: str = typer.Argument(..., help="Directory for generated prompt files and manifest"),
+    limit: int = typer.Option(20, "--limit", help="Maximum sessions to include"),
+    max_chars: int = typer.Option(60000, "--max-chars", help="Maximum conversation chars per prompt"),
+):
+    """Write extraction prompts for a bounded batch of historical sessions."""
+    from knowledgeforge.ingestion.batch_extraction import build_prompt_batch
+
+    session_paths = _scan_historical_jsonl_sessions(Path(source_dir))
+    payload = build_prompt_batch(
+        session_paths,
+        output_dir=output_dir,
+        limit=limit,
+        max_chars=max_chars,
+    )
+    console.print_json(data=payload)
+
+
+@historical_app.command("extract-json")
+def historical_extract_json(
+    source_path: str = typer.Argument(..., help="Historical source path"),
+    output: str = typer.Argument(..., help="Output extraction JSON path"),
+    agent: str = typer.Option(..., "--agent", help="Source agent label, e.g. claude/codex/windsurf/antigravity"),
+    adapter_status: str = typer.Option("jsonl-supported", "--adapter-status", help="Adapter status or unsupported reason"),
+    limit_sessions: int = typer.Option(0, "--limit-sessions", help="Maximum JSONL sessions to scan; 0 means all"),
+    max_cards: int = typer.Option(40, "--max-cards", help="Maximum atomic cards to emit"),
+    max_sentence_chars: int = typer.Option(360, "--max-sentence-chars", help="Maximum chars copied into one card body"),
+):
+    """Write a no-upload atomic-card JSON artifact for one historical source."""
+    from knowledgeforge.ingestion.historical_json import (
+        HistoricalSource,
+        write_source_extraction_json,
+    )
+
+    payload = write_source_extraction_json(
+        HistoricalSource(agent=agent, path=source_path, adapter_status=adapter_status),
+        output_path=output,
+        limit_sessions=limit_sessions,
+        max_cards=max_cards,
+        max_sentence_chars=max_sentence_chars,
+    )
+    console.print_json(data=payload)
+
+
+@historical_app.command("codex-sqlite-export")
+def historical_codex_sqlite_export(
+    db_path: str = typer.Argument(..., help="Codex SQLite database path"),
+    output_dir: str = typer.Argument(..., help="Directory for grouped JSONL export"),
+    limit_threads: int = typer.Option(20, "--limit-threads", help="Maximum threads to export"),
+    schema_only: bool = typer.Option(False, "--schema-only", help="Print schema JSON without exporting rows"),
+):
+    """Inspect a Codex SQLite database or export grouped conversation JSONL."""
+    from knowledgeforge.ingestion.codex_sqlite import export_codex_logs, inspect_sqlite_schema
+
+    if schema_only:
+        payload = inspect_sqlite_schema(db_path)
+    else:
+        payload = export_codex_logs(db_path, output_dir, limit_threads=limit_threads)
+    console.print_json(data=payload)
+
+
+def _parse_historical_source_spec(value: str):
+    from knowledgeforge.ingestion.source_inventory import SourceSpec
+
+    agent, separator, remainder = value.partition("=")
+    path, final_separator, adapter_status = remainder.rpartition("=")
+    if not separator or not final_separator or not agent or not path or not adapter_status:
+        raise typer.BadParameter("--source must use agent=path=adapter format")
+    return SourceSpec(agent=agent, path=path, adapter_status=adapter_status)
+
+
+def _scan_historical_jsonl_sessions(source_dir: Path) -> list[str]:
+    root = source_dir.expanduser()
+    if not root.exists():
+        raise typer.BadParameter(f"Source directory does not exist: {source_dir}")
+
+    session_paths: list[str] = []
+    for path in sorted(root.rglob("*.jsonl"), key=lambda item: str(item).lower()):
+        if "subagents" in str(path).lower():
+            continue
+        if path.name.startswith("agent-"):
+            continue
+        session_paths.append(str(path))
+    return session_paths
 
 
 # === INDEX COMMANDS ===

@@ -1,0 +1,606 @@
+{
+  "conversation_summary": {
+    "date": "2026-04-24",
+    "key_takeaways": [
+      "Historical session candidates remain current_truth=false and need repo confirmation.",
+      "Credential-like lines, private-key material, phone-number-like values, and noisy traces were skipped.",
+      "Generated 24 reusable candidate card(s) from 24 session file(s)."
+    ],
+    "projects_detected": [
+      "Codex"
+    ],
+    "summary": "Scanned 24 codex JSONL session file(s) from C:\\Users\\tiaz\\.codex\\sessions and wrote only low-trust atomic memory candidates. Raw transcript text was not embedded wholesale and no KnowledgeForge import was attempted.",
+    "title": "Codex historical session atomic extraction"
+  },
+  "discarded_noise": [
+    {
+      "content_type": "sentences_skipped_as_noise",
+      "count": 6,
+      "reason": "count"
+    },
+    {
+      "content_type": "sessions_without_durable_candidates",
+      "count": 17,
+      "reason": "count"
+    }
+  ],
+  "memory_cards": [
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: You\u2019re hitting a compile error in web_debug.c from a messy string replacement. I fixed the JSON formatting and function boundaries, and registered the new mode endpoint.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:bd1450fbf52ef86b7c2a81854d62dd0b"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "You\u2019re hitting a compile error in webdebug.c from a messy",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: Want me to re-enable TinyUSB HID now, or keep it off until you\u2019ve verified the web logs?",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:6c394647c86e22dd07ae9d7a78975d9e"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Want me to re-enable TinyUSB HID now, or keep it",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: Good catch. The build error came from a name collision: we included PT key codes so `KEY_S` became a macro; I fixed `hid_screenshot_snip()` to use that macro directly (no local const).",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:f9bf0672324d4f1f619452c0c98e44d0"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Good catch. The build error came from a name collision",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f recorded this reusable item: Using the resolved component: adb -s [REDACTED_DEVICE] shell am start -n <package>/<activity",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-06",
+        "conversation_title": "rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f",
+        "message_refs": [
+          "exchange:d5ce80bfe2b068f0fe5a3de489512a5b"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Using the resolved component: adb -s [REDACTEDDEVICE] shell am start",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f recorded this reusable item: Then launch via monkey or the exact component resolved above.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-06",
+        "conversation_title": "rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f",
+        "message_refs": [
+          "exchange:d5ce80bfe2b068f0fe5a3de489512a5b"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Then launch via monkey or the exact component resolved above",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f recorded this reusable item: Merge conflicts fixed: Removed conflict markers and unified code paths.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-06",
+        "conversation_title": "rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f",
+        "message_refs": [
+          "exchange:a3a372b788d87910c67ecd8711613e53"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Merge conflicts fixed: Removed conflict markers and unified code paths",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f recorded this reusable item: I\u2019ve reviewed the Android app and implemented targeted improvements: fixed merge conflicts, ensured a clean Gradle wrapper flow, decluttered the main screen with a settings icon, and added verbose Bluetooth connection feedback.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-06",
+        "conversation_title": "rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f",
+        "message_refs": [
+          "exchange:a3a372b788d87910c67ecd8711613e53"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I\u2019ve reviewed the Android app and implemented targeted improvements: fixed",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f recorded this reusable item: Good news the app flow works now; the next step is to make sure writes go to the correct characteristic, with the right write type, and with chunks sized to the negotiated MTU. Right now your ViewModel sends fixed 180\u2011byte chunks, which will silently fail on Android 10 if MTU stays near the default (23 \u2192 20 bytes payload). Also, if the `TEXT_IN` character...",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-06",
+        "conversation_title": "rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f",
+        "message_refs": [
+          "exchange:f388cd30bc35d2fa884ce3aa5e402223"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Good news the app flow works now; the next step",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f recorded this reusable item: Filters too strict. We fixed this by scanning without filters and logging all results; if you still don\u2019t see \u201cResult: \u2026\u201d, permissions are the prime suspect.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-06",
+        "conversation_title": "rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f",
+        "message_refs": [
+          "exchange:06994848fc4b19f5c79ccb599af8724f"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Filters too strict. We fixed this by scanning without filters",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-03T16-31-30-2a25d7e5-b87b-46c2-84b3-513d82c26e70 recorded this reusable item: Good catch. Your build failed for two reasons. I fixed both and added safer guards.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-03",
+        "conversation_title": "rollout-2025-09-03T16-31-30-2a25d7e5-b87b-46c2-84b3-513d82c26e70",
+        "message_refs": [
+          "exchange:a0a25fa0cb0afc1f5ec1303effe0bbc5"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "codex",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Good catch. Your build failed for two reasons. I fixed",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-02T18-47-11-d1fe72d1-cc9c-46c0-9524-7199d04e9b9b recorded this reusable item: Tell me which route you prefer:",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-02",
+        "conversation_title": "rollout-2025-09-02T18-47-11-d1fe72d1-cc9c-46c0-9524-7199d04e9b9b",
+        "message_refs": [
+          "exchange:211e940c7ac326e537db0ba889083d8a"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "api-contract",
+        "codex",
+        "historical-session",
+        "interface"
+      ],
+      "title": "Tell me which route you prefer",
+      "type": "api_contract",
+      "why": "API contracts are durable integration facts that future work must preserve or confirm."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: Consent: Clarify when implied vs explicit consent is acceptable; document and record consent decisions.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:b97f2065078e029e577388ec65fb4399"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "codex",
+        "data-shape",
+        "historical-session",
+        "schema"
+      ],
+      "title": "Consent: Clarify when implied vs explicit consent is acceptable; document",
+      "type": "data_schema",
+      "why": "Schemas and field contracts are useful for adapter and import work."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: Here\u2019s a clean, corrected version plus concrete next steps.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:b97f2065078e029e577388ec65fb4399"
+        ]
+      },
+      "status": "open_unverified",
+      "tags": [
+        "codex",
+        "historical-session",
+        "open-work",
+        "todo"
+      ],
+      "title": "Here\u2019s a clean, corrected version plus concrete next steps",
+      "type": "todo",
+      "why": "Open work should stay visible without being treated as verified implementation state."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f recorded this reusable item: If you see com.tigs.ptkbd.debug, use that package ID in the next steps.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-06",
+        "conversation_title": "rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f",
+        "message_refs": [
+          "exchange:d5ce80bfe2b068f0fe5a3de489512a5b"
+        ]
+      },
+      "status": "open_unverified",
+      "tags": [
+        "codex",
+        "historical-session",
+        "open-work",
+        "todo"
+      ],
+      "title": "If you see com.tigs.ptkbd.debug, use that package ID in the",
+      "type": "todo",
+      "why": "Open work should stay visible without being treated as verified implementation state."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-05T21-33-25-38c7826c-3960-4f74-a3d9-ed6ce639d90c recorded this reusable item: Next steps to verify end-to-end",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-05",
+        "conversation_title": "rollout-2025-09-05T21-33-25-38c7826c-3960-4f74-a3d9-ed6ce639d90c",
+        "message_refs": [
+          "exchange:68c89ab7dd0fd1004441dae290225827"
+        ]
+      },
+      "status": "open_unverified",
+      "tags": [
+        "codex",
+        "historical-session",
+        "open-work",
+        "todo"
+      ],
+      "title": "Next steps to verify end-to-end",
+      "type": "todo",
+      "why": "Open work should stay visible without being treated as verified implementation state."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: I wouldprefer to create a second webpage where I can write the text to send, this will remove any BLE comunication issue or advertising",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:edec4af0c63aa9e57e32b66c06c554ca"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "codex",
+        "decision",
+        "historical-session",
+        "rationale"
+      ],
+      "title": "I wouldprefer to create a second webpage where I can",
+      "type": "decision",
+      "why": "Decisions preserve why a particular implementation path was chosen."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: I would like to remove the heartbeat from the ESP32, I would prefer that the device gets an IP via DHCP in the wifi network , and I want the device to host a webpage with the debug output, since when activating the USB for mulating the keyboard we will loose the jtag",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:6c394647c86e22dd07ae9d7a78975d9e"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "codex",
+        "decision",
+        "historical-session",
+        "rationale"
+      ],
+      "title": "I would like to remove the heartbeat from the ESP32",
+      "type": "decision",
+      "why": "Decisions preserve why a particular implementation path was chosen."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f recorded this reusable item: log(\"Scanning blocked: grant Location and enable device Location\")",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-06",
+        "conversation_title": "rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f",
+        "message_refs": [
+          "exchange:6143ee5c1377d965369e1a618d43ac63"
+        ]
+      },
+      "status": "open_unverified",
+      "tags": [
+        "blocker",
+        "codex",
+        "historical-session",
+        "risk"
+      ],
+      "title": "log(\"Scanning blocked: grant Location and enable device Location\")",
+      "type": "blocker",
+      "why": "Blockers explain why a task could not continue and what must be resolved first."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f recorded this reusable item: Here\u2019s how to quickly debug why the scan never progresses beyond \u201cScan started\u201d on your device, plus small app-side changes to surface what\u2019s missing.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-06",
+        "conversation_title": "rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f",
+        "message_refs": [
+          "exchange:6143ee5c1377d965369e1a618d43ac63"
+        ]
+      },
+      "status": "open_unverified",
+      "tags": [
+        "blocker",
+        "codex",
+        "historical-session",
+        "risk"
+      ],
+      "title": "Here\u2019s how to quickly debug why the scan never progresses",
+      "type": "blocker",
+      "why": "Blockers explain why a task could not continue and what must be resolved first."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-03T16-31-30-2a25d7e5-b87b-46c2-84b3-513d82c26e70 recorded this reusable item: BLE init: Use the legacy VHCI controller+HCI init path when `CONFIG_BT_NIMBLE_LEGACY_VHCI_ENABLE=y`. This avoids the missing symbol error and still logs failures cleanly.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-03",
+        "conversation_title": "rollout-2025-09-03T16-31-30-2a25d7e5-b87b-46c2-84b3-513d82c26e70",
+        "message_refs": [
+          "exchange:a0a25fa0cb0afc1f5ec1303effe0bbc5"
+        ]
+      },
+      "status": "open_unverified",
+      "tags": [
+        "blocker",
+        "codex",
+        "historical-session",
+        "risk"
+      ],
+      "title": "BLE init: Use the legacy VHCI controller+HCI init path when",
+      "type": "blocker",
+      "why": "Blockers explain why a task could not continue and what must be resolved first."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: If you prefer the true PT-PT dead keys, tell me and I\u2019ll update `ptpt_keymap.c` to match Windows Portuguese precisely.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:db890e8bb92a1a2b785d11a8dff383d1"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "codex",
+        "decision",
+        "historical-session",
+        "rationale"
+      ],
+      "title": "If you prefer the true PT-PT dead keys, tell me",
+      "type": "decision",
+      "why": "Decisions preserve why a particular implementation path was chosen."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: If you prefer PT mode as default, I can switch the default or persist the mode via NVS.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:f9bf0672324d4f1f619452c0c98e44d0"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "codex",
+        "decision",
+        "historical-session",
+        "rationale"
+      ],
+      "title": "If you prefer PT mode as default, I can switch",
+      "type": "decision",
+      "why": "Decisions preserve why a particular implementation path was chosen."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: If you prefer Alt\u2011codes, leave mode as \u201cWindows Alt codes\u201d \u2014 now it will auto\u2011enable Num Lock while entering digits, so \u201c\u00e0\u201d (Alt+0224) prints reliably too.",
+      "confidence": "low",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:9936225f829ca71e645ad23fe5ce0fd1"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "codex",
+        "decision",
+        "historical-session",
+        "rationale"
+      ],
+      "title": "If you prefer Alt\u2011codes, leave mode as \u201cWindows Alt codes\u201d",
+      "type": "decision",
+      "why": "Decisions preserve why a particular implementation path was chosen."
+    },
+    {
+      "body": "Historical codex session rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051 recorded this reusable item: Consent is a recurring issue \u2192 implied vs explicit consent must be clarified.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Codex",
+      "source": {
+        "conversation_date": "2025-09-09",
+        "conversation_title": "rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051",
+        "message_refs": [
+          "exchange:b97f2065078e029e577388ec65fb4399"
+        ]
+      },
+      "status": "historical",
+      "tags": [
+        "codex",
+        "constraint",
+        "guardrail",
+        "historical-session"
+      ],
+      "title": "Consent is a recurring issue \u2192 implied vs explicit consent",
+      "type": "constraint",
+      "why": "Constraints prevent future work from violating known project rules."
+    }
+  ],
+  "possible_conflicts": []
+}

@@ -1,0 +1,472 @@
+{
+  "generated_at": "2026-04-24T17:03:43.426953+00:00",
+  "host": "HomePC-Windows",
+  "known_sources": [
+    {
+      "adapter_status": "jsonl-supported",
+      "agent": "claude",
+      "candidate_files": 1261,
+      "exists": true,
+      "json_files": 368,
+      "jsonl_files": 1252,
+      "likely_candidate_samples": [
+        {
+          "last_write_time": "2026-04-05T02:52:16.440066+00:00",
+          "length": 198811,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\--bs7-sentry-\\73539b0b-ccc2-4782-ada4-949a6f9d7e1b.jsonl"
+        },
+        {
+          "last_write_time": "2026-04-05T00:33:49.969828+00:00",
+          "length": 99075,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\--bs7-sentry-\\73539b0b-ccc2-4782-ada4-949a6f9d7e1b\\subagents\\agent-acf8f1fac3378c291.jsonl"
+        },
+        {
+          "last_write_time": "2026-03-26T06:25:01.065395+00:00",
+          "length": 513611,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\--bs7-Users-User-Desktop-sentry\\87e5c3ea-d899-4fac-9375-07cc55af9254.jsonl"
+        },
+        {
+          "last_write_time": "2026-04-04T20:14:07.489233+00:00",
+          "length": 1859,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\--bs7-Users-User-Desktop-sentry\\8dff95cf-b76d-43f9-8105-c1b7dd13fbd9.jsonl"
+        },
+        {
+          "last_write_time": "2026-04-01T16:15:35.728398+00:00",
+          "length": 912446,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--\\cb56d1ec-0202-478a-8d13-2895a4e949e6.jsonl"
+        },
+        {
+          "last_write_time": "2026-03-26T17:22:53.102595+00:00",
+          "length": 1731,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Program-Files-Pencil\\30ee732b-c326-4a27-872b-13b34b960bd6.jsonl"
+        },
+        {
+          "last_write_time": "2026-03-28T01:20:01.017232+00:00",
+          "length": 1780,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Program-Files-Pencil\\4578540a-b26c-4e27-99ea-36480e086168.jsonl"
+        },
+        {
+          "last_write_time": "2026-03-28T01:06:26.386270+00:00",
+          "length": 3306,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Program-Files-Pencil\\aa2423aa-c1a3-48eb-8993-de363652024b.jsonl"
+        },
+        {
+          "last_write_time": "2026-03-28T01:12:48.648520+00:00",
+          "length": 3239,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Program-Files-Pencil\\b2a581e8-c940-45e2-bffd-694775a2b999.jsonl"
+        },
+        {
+          "last_write_time": "2026-03-26T17:19:47.051021+00:00",
+          "length": 1731,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Program-Files-Pencil\\d778d11c-c72c-4584-9661-df5919e77c80.jsonl"
+        },
+        {
+          "last_write_time": "2026-03-28T01:20:32.902721+00:00",
+          "length": 3394,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Program-Files-Pencil\\eb916f95-9b9a-40c6-b342-a3b32c593c1f.jsonl"
+        },
+        {
+          "last_write_time": "2026-02-03T14:20:58.085485+00:00",
+          "length": 215148,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--SentryDev-SentryOG\\87699520-c7fd-4370-965a-5000dedaa3ed\\subagents\\agent-a246b3c.jsonl"
+        },
+        {
+          "last_write_time": "2026-02-03T13:14:26.831979+00:00",
+          "length": 230873,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--SentryDev-SentryOG\\fa45466d-1f88-4eb6-96ce-546b6d0f2eb9\\subagents\\agent-a087028.jsonl"
+        },
+        {
+          "last_write_time": "2026-02-03T14:53:08.152217+00:00",
+          "length": 1241,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--SentryDev-SentryOG\\sessions-index.json"
+        },
+        {
+          "last_write_time": "2026-02-20T22:17:30.669618+00:00",
+          "length": 203214,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Users-tiaz--claude-skills\\bdfc5a3b-10d3-4145-9140-196a8e921e8f\\subagents\\agent-a4011a6.jsonl"
+        },
+        {
+          "last_write_time": "2026-02-03T01:00:43.886770+00:00",
+          "length": 97756,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Users-tiaz--claude-worktrees-SentryOG-zealous-montalcini\\8a96b0bd-f945-43be-8192-239da79db43f\\subagents\\agent-a2f288a.jsonl"
+        },
+        {
+          "last_write_time": "2026-02-03T01:08:59.317335+00:00",
+          "length": 71778,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Users-tiaz--claude-worktrees-SentryOG-zealous-montalcini\\8a96b0bd-f945-43be-8192-239da79db43f\\subagents\\agent-aa73485.jsonl"
+        },
+        {
+          "last_write_time": "2026-02-03T12:47:54.545860+00:00",
+          "length": 735,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Users-tiaz--claude-worktrees-SentryOG-zealous-montalcini\\sessions-index.json"
+        },
+        {
+          "last_write_time": "2026-04-10T11:45:44.577987+00:00",
+          "length": 1781,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Users-tiaz--local-bin\\6ed31d5b-11cd-4646-9cff-b9ef72b1fc70.jsonl"
+        },
+        {
+          "last_write_time": "2026-03-29T00:52:07.861399+00:00",
+          "length": 2575773,
+          "path": "C:\\Users\\tiaz\\.claude\\projects\\C--Users-tiaz-Desktop-AiVisibility--claude-worktrees-amazing-wilson\\1a1fe17c-c69c-46f4-b726-cfff24ae0f98.jsonl"
+        }
+      ],
+      "log_files": 0,
+      "newest_write": "2026-04-24T15:46:16.576410+00:00",
+      "path": "C:\\Users\\tiaz\\.claude\\projects",
+      "sqlite_db_files": 0,
+      "total_bytes": 390079160,
+      "total_files": 1676
+    },
+    {
+      "adapter_status": "jsonl-supported",
+      "agent": "codex",
+      "candidate_files": 24,
+      "exists": true,
+      "json_files": 0,
+      "jsonl_files": 24,
+      "likely_candidate_samples": [
+        {
+          "last_write_time": "2025-09-01T23:56:15.782629+00:00",
+          "length": 305528,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\02\\rollout-2025-09-02T00-15-15-e0822f7a-f515-41ce-982d-48f10054a37e.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-02T17:40:28.013282+00:00",
+          "length": 66331,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\02\\rollout-2025-09-02T18-28-30-6248a224-ce05-47f4-a7f3-8f4542d72363.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-03T00:12:44.739403+00:00",
+          "length": 744198,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\02\\rollout-2025-09-02T18-47-11-d1fe72d1-cc9c-46c0-9524-7199d04e9b9b.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-04T13:49:27.622270+00:00",
+          "length": 382870,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\03\\rollout-2025-09-03T16-31-30-2a25d7e5-b87b-46c2-84b3-513d82c26e70.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-05T00:19:43.953128+00:00",
+          "length": 87081,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\04\\rollout-2025-09-04T23-00-57-4698a32a-9ef5-45bf-8115-f065dfc216ac.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-05T18:43:07.345720+00:00",
+          "length": 117739,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\05\\rollout-2025-09-05T19-24-38-d558a8bf-0781-46e1-929e-66acb6a4367b.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-05T22:06:56.672759+00:00",
+          "length": 412442,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\05\\rollout-2025-09-05T21-33-25-38c7826c-3960-4f74-a3d9-ed6ce639d90c.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-07T17:32:16.740373+00:00",
+          "length": 1472552,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\06\\rollout-2025-09-06T11-14-02-662ecced-f1f5-4858-8232-6902e3af363f.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-10T16:06:23.599168+00:00",
+          "length": 1028500,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\09\\rollout-2025-09-09T18-17-08-3a1df5f4-0f73-4ae3-abf3-3a7bc1128051.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-24T22:57:43.279619+00:00",
+          "length": 947146,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\23\\rollout-2025-09-23T22-08-56-01997868-7719-7871-9d29-618639e28b3b.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-24T23:08:18.293792+00:00",
+          "length": 15540,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\25\\rollout-2025-09-25T00-03-38-01997df7-d5cd-7f03-99ff-65c113454cec.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-24T23:14:58.457748+00:00",
+          "length": 4438419,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\25\\rollout-2025-09-25T00-13-36-01997e00-f854-74d0-aaff-4903f3a2b8f5.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-24T23:48:26.988661+00:00",
+          "length": 5193532,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\25\\rollout-2025-09-25T00-16-34-01997e03-ae06-7952-a55e-865700800baf.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-25T11:35:02.909444+00:00",
+          "length": 682653,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\25\\rollout-2025-09-25T11-33-54-0199806f-cd77-7c41-aa9e-180864bfaa93.jsonl"
+        },
+        {
+          "last_write_time": "2025-09-29T16:16:01.553219+00:00",
+          "length": 168357,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\09\\29\\rollout-2025-09-29T17-08-27-0199963b-85f8-7952-9195-f148a698ed62.jsonl"
+        },
+        {
+          "last_write_time": "2025-10-05T18:15:17.680737+00:00",
+          "length": 984051,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\10\\05\\rollout-2025-10-05T11-05-44-0199b3d5-996c-73d3-9b8f-5ab5e2562a7c.jsonl"
+        },
+        {
+          "last_write_time": "2025-10-07T20:43:59.884714+00:00",
+          "length": 355491,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\10\\07\\rollout-2025-10-07T21-39-34-0199c066-9cc1-7df2-b7fb-415fbc6c1694.jsonl"
+        },
+        {
+          "last_write_time": "2025-10-09T19:42:30.040623+00:00",
+          "length": 5253049,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\10\\08\\rollout-2025-10-08T15-16-01-0199c42d-d105-7093-8012-d4b2953301bf.jsonl"
+        },
+        {
+          "last_write_time": "2025-10-11T12:41:10.660029+00:00",
+          "length": 2824059,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\10\\09\\rollout-2025-10-09T20-44-07-0199ca80-9103-7cd0-a0a5-c04e9389da0f.jsonl"
+        },
+        {
+          "last_write_time": "2025-10-16T22:26:21.392930+00:00",
+          "length": 27814,
+          "path": "C:\\Users\\tiaz\\.codex\\sessions\\2025\\10\\16\\rollout-2025-10-16T23-25-33-0199ef20-e156-78c0-a14c-3c3b68c7d883.jsonl"
+        }
+      ],
+      "log_files": 0,
+      "newest_write": "2025-10-25T21:56:24.008597+00:00",
+      "path": "C:\\Users\\tiaz\\.codex\\sessions",
+      "sqlite_db_files": 0,
+      "total_bytes": 27165471,
+      "total_files": 24
+    },
+    {
+      "adapter_status": "unsupported-needs-vscode-storage-parser",
+      "agent": "windsurf-roaming",
+      "candidate_files": 513,
+      "exists": true,
+      "json_files": 707,
+      "jsonl_files": 0,
+      "likely_candidate_samples": [
+        {
+          "last_write_time": "2026-04-24T16:35:48.129501+00:00",
+          "length": 3748237,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\IndexedDB\\vscode-file_vscode-app_0.indexeddb.leveldb\\000108.log"
+        },
+        {
+          "last_write_time": "2026-04-24T17:03:08.872932+00:00",
+          "length": 69780,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\Local Storage\\leveldb\\376539.log"
+        },
+        {
+          "last_write_time": "2026-04-21T00:25:42.430626+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\editSessions.log"
+        },
+        {
+          "last_write_time": "2026-04-21T23:07:25.218091+00:00",
+          "length": 7057,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\main.log"
+        },
+        {
+          "last_write_time": "2026-04-21T00:25:34.412683+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\network-shared.log"
+        },
+        {
+          "last_write_time": "2026-04-21T15:40:28.360649+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\ptyhost.log"
+        },
+        {
+          "last_write_time": "2026-04-21T15:41:51.829530+00:00",
+          "length": 584,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\remoteTunnelService.log"
+        },
+        {
+          "last_write_time": "2026-04-21T23:07:24.827529+00:00",
+          "length": 19947,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\sharedprocess.log"
+        },
+        {
+          "last_write_time": "2026-04-21T00:25:34.413660+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\telemetry.log"
+        },
+        {
+          "last_write_time": "2026-04-21T15:42:00.054295+00:00",
+          "length": 1585,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\terminal.log"
+        },
+        {
+          "last_write_time": "2026-04-21T00:25:34.416134+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\userDataSync.log"
+        },
+        {
+          "last_write_time": "2026-04-21T00:25:44.162184+00:00",
+          "length": 84,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\window1\\exthost\\codeium.windsurf\\Windsurf (Lifeguard).log"
+        },
+        {
+          "last_write_time": "2026-04-21T16:47:06.960838+00:00",
+          "length": 7563,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\window1\\exthost\\codeium.windsurf\\Windsurf ACP devin-cloud.log"
+        },
+        {
+          "last_write_time": "2026-04-21T17:41:40.839182+00:00",
+          "length": 9185,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\window1\\exthost\\codeium.windsurf\\Windsurf ACP summary-agent.log"
+        },
+        {
+          "last_write_time": "2026-04-21T16:47:06.960838+00:00",
+          "length": 1753,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\window1\\exthost\\codeium.windsurf\\Windsurf ACP.log"
+        },
+        {
+          "last_write_time": "2026-04-21T17:51:42.241386+00:00",
+          "length": 35727,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\window1\\exthost\\codeium.windsurf\\Windsurf.log"
+        },
+        {
+          "last_write_time": "2026-04-21T17:51:42.241910+00:00",
+          "length": 13721,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\window1\\exthost\\exthost.log"
+        },
+        {
+          "last_write_time": "2026-04-21T00:25:34.770918+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\window1\\exthost\\extHostTelemetry.log"
+        },
+        {
+          "last_write_time": "2026-04-21T17:51:41.899162+00:00",
+          "length": 106435,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\window1\\exthost\\output_logging_20260421T012534\\1-Remote - SSH (Windsurf).log"
+        },
+        {
+          "last_write_time": "2026-04-21T00:25:44.165114+00:00",
+          "length": 150,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf\\logs\\20260421T012530\\window1\\exthost\\output_logging_20260421T012534\\2-Remote - Dev Containers (Windsurf).log"
+        }
+      ],
+      "log_files": 339,
+      "newest_write": "2026-04-24T17:03:40.470838+00:00",
+      "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Windsurf",
+      "sqlite_db_files": 98,
+      "total_bytes": 6480366958,
+      "total_files": 14699
+    },
+    {
+      "adapter_status": "unsupported-needs-vscode-storage-parser",
+      "agent": "antigravity-roaming",
+      "candidate_files": 402,
+      "exists": true,
+      "json_files": 1168,
+      "jsonl_files": 0,
+      "likely_candidate_samples": [
+        {
+          "last_write_time": "2026-04-24T15:32:35.762530+00:00",
+          "length": 10854,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\Local Storage\\leveldb\\053489.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:26:01.674732+00:00",
+          "length": 898,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\antigravity-interactive-editor.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:17:55.880436+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\artifacts.log"
+        },
+        {
+          "last_write_time": "2026-04-20T14:42:56.779346+00:00",
+          "length": 4061,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\cloudcode.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:17:56.775164+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\editSessions.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:18:49.328239+00:00",
+          "length": 3461,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\ls-main.log"
+        },
+        {
+          "last_write_time": "2026-04-20T14:47:06.622089+00:00",
+          "length": 3805,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\main.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:17:56.423358+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\network-shared.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:18:03.565046+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\ptyhost.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:25:58.069139+00:00",
+          "length": 584,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\remoteTunnelService.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:26:02.268047+00:00",
+          "length": 272,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\rendererPerf.log"
+        },
+        {
+          "last_write_time": "2026-04-20T14:47:06.481020+00:00",
+          "length": 3722,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\sharedprocess.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:17:56.423358+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\telemetry.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:17:56.041065+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\terminal.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:17:56.427346+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\userDataSync.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:18:18.465272+00:00",
+          "length": 207,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\window1\\exthost\\Anthropic.claude-code\\Claude VSCode.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:18:46.756598+00:00",
+          "length": 568,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\window1\\exthost\\eamodio.gitlens\\GitLens (Git).log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:18:46.756598+00:00",
+          "length": 2407,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\window1\\exthost\\eamodio.gitlens\\GitLens.log"
+        },
+        {
+          "last_write_time": "2026-04-20T14:47:06.621572+00:00",
+          "length": 28433,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\window1\\exthost\\exthost.log"
+        },
+        {
+          "last_write_time": "2026-04-20T13:17:58.704926+00:00",
+          "length": 0,
+          "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity\\logs\\20260420T141754\\window1\\exthost\\extHostTelemetry.log"
+        }
+      ],
+      "log_files": 236,
+      "newest_write": "2026-04-24T17:03:18.657005+00:00",
+      "path": "C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity",
+      "sqlite_db_files": 32,
+      "total_bytes": 2358142260,
+      "total_files": 18063
+    }
+  ],
+  "note": "Metadata-only inventory. Raw historical files were not opened or read.",
+  "raw_files_read": false
+}

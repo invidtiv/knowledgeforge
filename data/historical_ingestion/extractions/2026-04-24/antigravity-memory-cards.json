@@ -1,0 +1,990 @@
+{
+  "conversation_summary": {
+    "date": "2026-04-24",
+    "key_takeaways": [
+      "VS Code-style storage was read schema-first and selected by known non-secret conversation/history carriers.",
+      "Historical candidates remain current_truth=false and need repo confirmation.",
+      "Generated 40 reusable candidate card(s) from 1400 extracted record(s)."
+    ],
+    "projects_detected": [
+      "Antigravity"
+    ],
+    "summary": "Scanned 1400 antigravity historical record(s) from C:\\Users\\tiaz\\AppData\\Roaming\\Antigravity and adapter-discovered companion stores. Only low-trust atomic memory candidates were written; no KnowledgeForge import was attempted.",
+    "title": "Antigravity VS Code storage atomic extraction"
+  },
+  "discarded_noise": [
+    {
+      "content_type": "records_without_durable_candidates",
+      "count": 1336,
+      "reason": "count"
+    },
+    {
+      "content_type": "sentences_skipped_for_secret_risk",
+      "count": 3,
+      "reason": "count"
+    }
+  ],
+  "memory_cards": [
+    {
+      "body": "Historical antigravity session ScraptRunBot Mini App \u2014 Walkthrough recorded this reusable item: \u2705 **`@` path alias** resolved in vite.config.ts (required resolve.alias for Rollup)",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-03-02",
+        "conversation_title": "ScraptRunBot Mini App \u2014 Walkthrough",
+        "message_refs": [
+          "exchange:72212d3b0c2e23ed90bfedee3f805a85"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "\u2705 @ path alias resolved in vite.config.ts (required resolve.alias for",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough - Backup Schema Documentation recorded this reusable item: Verified against `ActionEntity.kt`, `ConditionEntity.kt`, and `DatabaseEnums.kt`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-24",
+        "conversation_title": "Walkthrough - Backup Schema Documentation",
+        "message_refs": [
+          "exchange:bcdce2136017b8b88736601c862e9c4e"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Verified against ActionEntity.kt, ConditionEntity.kt, and DatabaseEnums.kt",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough - Custom Scripts Support for Outrun recorded this reusable item: Verified the database logic using a custom test script `tests/verify_custom_script.py`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-23",
+        "conversation_title": "Walkthrough - Custom Scripts Support for Outrun",
+        "message_refs": [
+          "exchange:a0de578553ea0c8efc19c3e505946a78"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Verified the database logic using a custom test script tests/verifycustomscript.py",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Analysis: Missing Commit on GitHub recorded this reusable item: I verified the remote state before the push by checking the commit history on GitHub. The remote branch was lagging:",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-23",
+        "conversation_title": "Analysis: Missing Commit on GitHub",
+        "message_refs": [
+          "exchange:c3c6db80bc98235ddb6b1c110a2c9934"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I verified the remote state before the push by checking",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Analysis: Missing Commit on GitHub recorded this reusable item: I have resolved the issue where your last local commit was not appearing on GitHub.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-23",
+        "conversation_title": "Analysis: Missing Commit on GitHub",
+        "message_refs": [
+          "exchange:c3c6db80bc98235ddb6b1c110a2c9934"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I have resolved the issue where your last local commit",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Analysis: Missing Commit on GitHub recorded this reusable item: 1. **Verified Local State**: Confirmed commit `7841df1f` (\"feat: implement screenshot action...\") existed locally.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-23",
+        "conversation_title": "Analysis: Missing Commit on GitHub",
+        "message_refs": [
+          "exchange:c3c6db80bc98235ddb6b1c110a2c9934"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "1. Verified Local State: Confirmed commit 7841df1f (\"feat: implement screenshot",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Startup Sequence Implementation Walkthrough recorded this reusable item: [x] **Unit Test**: Verified startup sequence steps call correct ADB commands.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-18",
+        "conversation_title": "Startup Sequence Implementation Walkthrough",
+        "message_refs": [
+          "exchange:3e37e336692916e6f2c5a1996d5a2e62"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "[x] Unit Test: Verified startup sequence steps call correct ADB",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Startup Sequence Implementation Walkthrough recorded this reusable item: [x] **Unit Test**: Verified failure handling (e.g. accessibility check failure).",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-18",
+        "conversation_title": "Startup Sequence Implementation Walkthrough",
+        "message_refs": [
+          "exchange:3e37e336692916e6f2c5a1996d5a2e62"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "[x] Unit Test: Verified failure handling (e.g. accessibility check failure)",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough - User-File Management UI recorded this reusable item: Verified that `db_manager.py` correctly handles the `assigned_users` JSON field.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-18",
+        "conversation_title": "Walkthrough - User-File Management UI",
+        "message_refs": [
+          "exchange:f64a640aaba0013196a3000fe8236744"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Verified that dbmanager.py correctly handles the assignedusers JSON field",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough - User-File Management UI recorded this reusable item: Verified that `assigned_users` is now part of the schema in `app/dashboard/api/files.py`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-18",
+        "conversation_title": "Walkthrough - User-File Management UI",
+        "message_refs": [
+          "exchange:f64a640aaba0013196a3000fe8236744"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Verified that assignedusers is now part of the schema in",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough - Unified Automation Robustness (SR & Outrun) recorded this reusable item: SR Failsafes**: Code reviewed `script_loop.py` to ensure it uses the exact same verified monitoring logic as `outrun_loop.py`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-18",
+        "conversation_title": "Walkthrough - Unified Automation Robustness (SR & Outrun)",
+        "message_refs": [
+          "exchange:d254436a9960678e1171c6d695bc0a49"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "SR Failsafes: Code reviewed scriptloop.py to ensure it uses the",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough - Unified Automation Robustness (SR & Outrun) recorded this reusable item: Outrun Failsafes**: Verified fallback timeouts and CATS-crash detection in `tests/test_outrun_robustness.py`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-18",
+        "conversation_title": "Walkthrough - Unified Automation Robustness (SR & Outrun)",
+        "message_refs": [
+          "exchange:d254436a9960678e1171c6d695bc0a49"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Outrun Failsafes: Verified fallback timeouts and CATS-crash detection in tests/testou...",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Log Error Fixes Walkthrough recorded this reusable item: I have successfully analyzed and fixed three errors identified in the logs for [REDACTED_PHONE].",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-18",
+        "conversation_title": "Log Error Fixes Walkthrough",
+        "message_refs": [
+          "exchange:2d4bee9cb4fa3be6c89dd7958cdc1fc7"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I have successfully analyzed and fixed three errors identified in",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough - Unified Automation Robustness (SR & Outrun) recorded this reusable item: Fixed a logic stall in the Outrun loop where blocking database updates were freezing the event loop.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-18",
+        "conversation_title": "Walkthrough - Unified Automation Robustness (SR & Outrun)",
+        "message_refs": [
+          "exchange:d254436a9960678e1171c6d695bc0a49"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Fixed a logic stall in the Outrun loop where blocking",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough - Unified Automation Robustness (SR & Outrun) recorded this reusable item: ADB Timeout Handling**: Verified `TimeoutExpired` is correctly caught in `tests/test_timeout_handling.py`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-18",
+        "conversation_title": "Walkthrough - Unified Automation Robustness (SR & Outrun)",
+        "message_refs": [
+          "exchange:d254436a9960678e1171c6d695bc0a49"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "ADB Timeout Handling: Verified TimeoutExpired is correctly caught in tests/testtimeou...",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Frontend & API Extensions Walkthrough recorded this reusable item: Verified `api/tesseract.py` syntax and registration.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-17",
+        "conversation_title": "Frontend & API Extensions Walkthrough",
+        "message_refs": [
+          "exchange:35d8aabe378c03f4c6051954d4a9089a"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Verified api/tesseract.py syntax and registration",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Documentation & Logic Updates Walkthrough recorded this reusable item: [x] Verified `wrap_delay` logic is triggered when workers are too close at the start of the queue.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-16",
+        "conversation_title": "Documentation & Logic Updates Walkthrough",
+        "message_refs": [
+          "exchange:26d2b43fcde8da6ebf72d271cacd1857"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "[x] Verified wrapdelay logic is triggered when workers are too",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough - Fixing Bot Freezing Issues recorded this reusable item: [x] Verified all `log_action` calls in `app/handlers/` are now asynchronous.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-16",
+        "conversation_title": "Walkthrough - Fixing Bot Freezing Issues",
+        "message_refs": [
+          "exchange:be8ee6fabafc5242f7b454bcba0a21ac"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "[x] Verified all logaction calls in app/handlers/ are now asynchronous",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Documentation & Logic Updates Walkthrough recorded this reusable item: [x] Verified SQL-based circularity works: `sr_script_loop` correctly wraps from end to start.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-16",
+        "conversation_title": "Documentation & Logic Updates Walkthrough",
+        "message_refs": [
+          "exchange:26d2b43fcde8da6ebf72d271cacd1857"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "[x] Verified SQL-based circularity works: srscriptloop correctly wraps from end",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session SR Automation Start Failure - Investigation & Resolution recorded this reusable item: Fixed `IndexError` by selecting all required columns for `_row_to_worker_record`",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-16",
+        "conversation_title": "SR Automation Start Failure - Investigation & Resolution",
+        "message_refs": [
+          "exchange:ba80231b4b02a4e10d934df8973afca6"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Fixed IndexError by selecting all required columns for rowtoworkerrecord",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session Walkthrough: Starting SR Automation recorded this reusable item: Automation State**: Verified as `running`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2026-01-16",
+        "conversation_title": "Walkthrough: Starting SR Automation",
+        "message_refs": [
+          "exchange:99d07a8e9620a5f268d400ecb4b83e00"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Automation State: Verified as running",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session SR Automation Enhancements Walkthrough recorded this reusable item: The legacy test suite (`test_db_manager.py`) currently shows some repository bridge failures due to a known desync between the SQLite schema and SQLAlchemy models in the test environment's shared-memory database. However, the core automation logic and database interactions have been fully verified with direct SQLite tests.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2025-12-25",
+        "conversation_title": "SR Automation Enhancements Walkthrough",
+        "message_refs": [
+          "exchange:cca4134a5e363cd2064d7e0c57939bef"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "The legacy test suite (testdbmanager.py) currently shows some repository bridge",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session SR Automation Enhancements Walkthrough recorded this reusable item: I have successfully implemented and verified the requested enhancements for SR automation. These changes improve worker scalability, provide more granular control over emulator targeting, and introduce a graceful shutdown mechanism.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "2025-12-25",
+        "conversation_title": "SR Automation Enhancements Walkthrough",
+        "message_refs": [
+          "exchange:cca4134a5e363cd2064d7e0c57939bef"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I have successfully implemented and verified the requested enhancements for",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #762 recorded this reusable item: Successfully fixed the SR automation startup failure!",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #762",
+        "message_refs": [
+          "exchange:419a1fb4d312d082d0a18d79021e9ce1"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Successfully fixed the SR automation startup failure!",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #572 recorded this reusable item: I've verified these fixes with a test script. You can review the details in the `walkthrough.md`.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #572",
+        "message_refs": [
+          "exchange:76de9883735fe9de1a4a25538d627fa7"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I've verified these fixes with a test script. You can",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #276 recorded this reusable item: I've implemented the user-file management features in both backend and frontend. Since the dev server is not running, I've verified the code structure and prepared the walkthrough for the user to test manually.\"",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #276",
+        "message_refs": [
+          "exchange:716a1812f8ea81baab3b75b92682b483"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I've implemented the user-file management features in both backend and",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #413 recorded this reusable item: I've finalized the walkthrough documenting all changes and verification results. All special OCR categories are now correctly recognized, mapped, and verified in both Outrun and SR systems.\"",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #413",
+        "message_refs": [
+          "exchange:09e0c75c389952c19cf808963b23cf6b"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I've finalized the walkthrough documenting all changes and verification results",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #807 recorded this reusable item: I verified the syntax of the modified file and it compiled successfully.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #807",
+        "message_refs": [
+          "exchange:62150019e80384a98b9cfba33794a50b"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I verified the syntax of the modified file and it",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #438 recorded this reusable item: I have verified the outrun final report logic and can confirm the following:",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #438",
+        "message_refs": [
+          "exchange:bc9bae41fcc95cfb84fa422b2b4715ab"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I have verified the outrun final report logic and can",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #468 recorded this reusable item: I have verified the outrun final report logic.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #468",
+        "message_refs": [
+          "exchange:3f895172c2870abb54bcd55b7135d72c"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I have verified the outrun final report logic",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #327 recorded this reusable item: I have successfully started the SR automation cross all workers and verified their states. I have also created the walkthrough.md artifact.\"",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #327",
+        "message_refs": [
+          "exchange:ad80e3f4022276195ab165b6c6462d52"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I have successfully started the SR automation cross all workers",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #395 recorded this reusable item: I have successfully implemented and verified the recognition of all special OCR categories for both **Outrun Gang Fights** and **SR Automation**.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #395",
+        "message_refs": [
+          "exchange:42ea7b544e37d433719f8993fe2c636a"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I have successfully implemented and verified the recognition of all",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #200 recorded this reusable item: I have fixed the `NameError: name 'Any' is not defined` in `app/automation/screenshot_ocr.py` by adding `Any` to the imports from `typing`. I verified the fix by successfully importing the module. You should be able to start the backend now.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #200",
+        "message_refs": [
+          "exchange:3e1b5ecf0a13992c0ece01395ea4607b"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I have fixed the NameError: name 'Any' is not defined",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #689 recorded this reusable item: I fixed the `AttributeError`, installed `cv2` in the `venv`, and successfully repaired the corrupted database into `scraptbt_repaired.db`. However, a file system lock is currently preventing me from overwriting the original `scraptbt.db`. I will notify the user so they can stop the process and complete the replacement.\"",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #689",
+        "message_refs": [
+          "exchange:b9945701d8833ae415f1351f747c1465"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "I fixed the AttributeError, installed cv2 in the venv, and",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #767 recorded this reusable item: Fixed `DNCONSOLE_PATH` to correct LDPlayer installation",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #767",
+        "message_refs": [
+          "exchange:e07a3ade5a3573d30b7b1d2c956605e5"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Fixed DNCONSOLEPATH to correct LDPlayer installation",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #1120 recorded this reusable item: All 11 TG screens applied and TypeScript verified clean (0 errors). Here's what was updated:",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #1120",
+        "message_refs": [
+          "exchange:af1e951a6c371adee0502c3aa4ef71cf"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "All 11 TG screens applied and TypeScript verified clean (0",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #222 recorded this reusable item: Additionally, I fixed the logic that was causing the `Check CATS stopped failed:` warnings. These were false alarms caused by the `pidof` command returning exit code 1 (which correctly means \"process not found\") being interpreted as an error.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #222",
+        "message_refs": [
+          "exchange:cc577e738d645ecd30c6bc2fc3e1e2cb"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "Additionally, I fixed the logic that was causing the Check",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #869 recorded this reusable item: 3. Verified the feature with automated tests.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #869",
+        "message_refs": [
+          "exchange:22662c5d4e649379bf5c96ac7eefda0a"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "3. Verified the feature with automated tests",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #571 recorded this reusable item: 3. Fixed `AttributeError` in `back_menu.py` by ignoring updates without text messages.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #571",
+        "message_refs": [
+          "exchange:25ea9662419cbb23a60550e9ba0b99bc"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "3. Fixed AttributeError in backmenu.py by ignoring updates without text",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    },
+    {
+      "body": "Historical antigravity session antigravityUnifiedStateSync.trajectorySummaries #669 recorded this reusable item: 3. **Database Repaired**: I successfully reconstructed the corrupted database file. The repaired version is saved as `scraptbt_repaired.db` and is verified to be clean.",
+      "confidence": "medium",
+      "current_truth": false,
+      "needs_repo_confirmation": true,
+      "project": "Antigravity",
+      "source": {
+        "conversation_date": "",
+        "conversation_title": "antigravityUnifiedStateSync.trajectorySummaries #669",
+        "message_refs": [
+          "exchange:a612af9edbaccb819c5528821cdfb938"
+        ]
+      },
+      "status": "resolved",
+      "tags": [
+        "antigravity",
+        "fix",
+        "historical-session",
+        "resolution"
+      ],
+      "title": "3. Database Repaired: I successfully reconstructed the corrupted database file",
+      "type": "resolution",
+      "why": "Resolutions capture what fixed or verified a previous problem."
+    }
+  ],
+  "possible_conflicts": []
+}
