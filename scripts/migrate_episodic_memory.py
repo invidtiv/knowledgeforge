@@ -148,16 +148,15 @@ def main():
         logger.info(f"Clearing '{collection}' collection for full reindex...")
         engine.store.clear_collection(collection)
 
-    # Get existing IDs
-    try:
-        existing = engine.store.get(collection)
-        existing_ids = set(existing.get("ids", []))
-    except Exception:
-        existing_ids = set()
-
-    # Filter out already-indexed
-    new_chunks = [(cid, content, meta) for cid, content, meta in all_chunks
-                  if cid not in existing_ids]
+    # Filter out already-indexed chunks without loading every collection ID.
+    existing_ids = set()
+    if not args.full_reindex:
+        existing_ids = engine.store.existing_ids(collection, [cid for cid, _, _ in all_chunks])
+    new_chunks = [
+        (cid, content, meta)
+        for cid, content, meta in all_chunks
+        if cid not in existing_ids
+    ]
 
     if not new_chunks:
         logger.info("All exchanges already indexed. Nothing to do.")

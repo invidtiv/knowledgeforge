@@ -55,6 +55,27 @@ Promote after repo validation:
 knowledgeforge memory status mem_abc123 active_verified --current-truth
 ```
 
+## Batch Pilot
+
+For server-side historical sessions, use the local ingestion runner in pilot mode. It writes extraction JSON under `data/memory_extractions/server/` and imports cards with conservative historical defaults:
+
+```bash
+KNOWLEDGEFORGE_MEMORY_EXTRACTION_MODEL=<openrouter-chat-model> \
+/home/bsdev/knowledgeforge/.venv/bin/python scripts/ingest_local_historical_sessions.py \
+  --skip-raw-archive \
+  --skip-conversation-index \
+  --extract-memory \
+  --extraction-limit 20 \
+  --report data/historical_ingestion/local_memory_pilot.json
+```
+
+Review the imported cards with:
+
+```bash
+knowledgeforge memory audit
+knowledgeforge memory list --status active_unverified --limit 50
+```
+
 ## Retrieval Rule
 
 Future agents should rank truth in this order:

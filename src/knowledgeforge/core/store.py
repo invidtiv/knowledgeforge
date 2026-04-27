@@ -325,25 +325,44 @@ class VectorStore:
     def count(self, collection: str) -> int:
         """Get the number of documents in a collection.
 
-        Returns -1 if the collection is inaccessible (e.g. corrupted
-        ChromaDB compaction logs that trigger SIGSEGV).
-
         Args:
             collection: Collection name
 
         Returns:
-            Number of documents in the collection, or -1 on failure
+            Number of documents in the collection, or -1 on failure.
         """
         try:
             col = self._get_collection(collection)
             if collection in self._broken_collections:
                 return -1
-            result = col.get(include=[])
-            return len(result.get("ids", []))
+            return col.count()
         except Exception as e:
             logger.error(f"Failed to count collection '{collection}': {e}")
             self._broken_collections.add(collection)
             return -1
+
+    def existing_ids(self, collection: str, ids: list[str]) -> set[str]:
+        """Return which candidate IDs already exist in a collection.
+
+        This intentionally checks a bounded candidate list instead of loading
+        every ID in a collection. Large Chroma collections can make
+        ``get(include=[])`` over the whole collection expensive and unstable.
+        """
+        if not ids:
+            return set()
+
+        try:
+            col = self._get_collection(collection)
+            found: set[str] = set()
+            batch_size = 1000
+            for i in range(0, len(ids), batch_size):
+                batch = ids[i:i + batch_size]
+                result = col.get(ids=batch, include=[])
+                found.update(result.get("ids", []))
+            return found
+        except Exception as e:
+            logger.error(f"Failed to check existing IDs in '{collection}': {e}")
+            raise RuntimeError(f"Existing ID check failed for '{collection}': {e}") from e
 
     def delete_by_file_path(self, collection: str, file_path: str) -> None:
         """Delete all chunks associated with a specific file path.

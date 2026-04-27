@@ -26,6 +26,8 @@ bot_token
 *.db
 chromadb/
 .local/
+data/historical_ingestion/
+data/memory_extractions/
 
 # Environment
 .env

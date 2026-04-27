@@ -380,12 +380,18 @@ Start by verifying KnowledgeForge MCP connectivity, then run a read-only Windows
 
 ## Immediate Next Tasks
 
-1. Add a batch extraction runner around `memory_extraction.py`.
-2. Add a source inventory script that outputs JSON.
-3. Add Codex SQLite exporter after schema inspection.
-4. Run pilot on 20 Claude/Superpowers JSONL sessions.
-5. Review pilot cards.
-6. Start Windows HomePC remote inventory under `C:\Users\tiaz` for Windsurf and Antigravity.
+1. Add a Codex SQLite exporter after schema inspection.
+2. Run a structured-memory pilot on 20 Claude/Superpowers JSONL sessions.
+3. Review pilot cards.
+4. Start Windows HomePC remote inventory under `C:\Users\tiaz` for Windsurf and Antigravity.
+
+Completed locally on 2026-04-24:
+
+- Added `scripts/inventory_historical_sessions.py`.
+- Added `scripts/ingest_local_historical_sessions.py`.
+- Archived 1,269 supported local JSONL sessions under `/home/bsdev/.local/share/knowledgeforge/raw_sessions/server/`.
+- Indexed 24,446 local historical conversation chunks into the low-trust `conversations` collection.
+- Added `docs/local-historical-session-ingestion.md`.
 
 ## Done Criteria
 

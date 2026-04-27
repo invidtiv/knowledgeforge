@@ -2046,15 +2046,12 @@ class KnowledgeForgeEngine:
             logger.info(f"Clearing collection '{collection}' for full reindex")
             self.store.clear_collection(collection)
             self.keyword_index.clear_collection(collection)
-            existing_ids = set()
         else:
-            # Get existing exchange IDs for incremental indexing
-            try:
-                result = self.store.get(collection)
-                existing_ids = set(result.get("ids", []))
-            except Exception:
-                existing_ids = set()
-            logger.info(f"Incremental ingestion: {len(existing_ids)} exchanges already indexed")
+            existing_count = self.store.count(collection)
+            logger.info(
+                "Incremental ingestion: %s existing conversation chunks",
+                existing_count if existing_count >= 0 else "unknown",
+            )
 
         # Load enrichment data
         enrich_dir = enrichment_dir or self.config.conversation_enrichment_dir
@@ -2085,11 +2082,16 @@ class KnowledgeForgeEngine:
                 # Chunk, embed, and store each exchange
                 all_chunks = []
                 for ex in exchanges:
-                    chunks = chunk_exchange(ex)
-                    # Skip already-indexed chunks
-                    new_chunks = [(cid, content, meta) for cid, content, meta in chunks
-                                  if cid not in existing_ids]
-                    all_chunks.extend(new_chunks)
+                    all_chunks.extend(chunk_exchange(ex))
+
+                if not full_reindex:
+                    candidate_ids = [cid for cid, _, _ in all_chunks]
+                    existing_ids = self.store.existing_ids(collection, candidate_ids)
+                    all_chunks = [
+                        (cid, content, meta)
+                        for cid, content, meta in all_chunks
+                        if cid not in existing_ids
+                    ]
 
                 if not all_chunks:
                     files_skipped += 1

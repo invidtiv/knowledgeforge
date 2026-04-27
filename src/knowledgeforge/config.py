@@ -122,8 +122,7 @@ class KnowledgeForgeConfig(BaseSettings):
     conversations_collection: str = "conversations"
     conversation_sources: list[str] = Field(default_factory=lambda: [
         "~/.claude/projects",
-        "~/.config/superpowers/conversation-archive/_codex",
-        "~/.config/superpowers/conversation-archive/_gemini",
+        "~/.config/superpowers/conversation-archive",
     ])
     conversation_archive_dir: str = "~/.config/superpowers/conversation-archive"
     conversation_enrichment_dir: str = ""  # e.g. data/enriched_conversations

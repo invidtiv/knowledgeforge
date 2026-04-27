@@ -94,8 +94,7 @@ auto_promote_confirmed: true
 # Conversations
 conversation_sources:
   - ~/.claude/projects
-  - ~/.config/superpowers/conversation-archive/_codex
-  - ~/.config/superpowers/conversation-archive/_gemini
+  - ~/.config/superpowers/conversation-archive
 conversation_archive_dir: ~/.config/superpowers/conversation-archive
 conversation_enrichment_dir: /home/bsdev/knowledgeforge/data/enriched_conversations
 conversation_max_tool_result_chars: 500
