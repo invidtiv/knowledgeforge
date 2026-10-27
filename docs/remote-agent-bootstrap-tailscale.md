@@ -3,7 +3,7 @@
 Use this document as the bootstrap prompt/instruction set for remote agents connecting to this server over **Tailscale**.
 
 This version is intentionally focused on **KnowledgeForge only**.
-It does **not** assume local CLI access to Veritas Kanban or other host-local workflows.
+It does **not** assume local CLI access to host-local workflows.
 
 ---
 
